@@ -11,9 +11,11 @@
             --text-main: #37352F; --text-muted: #787774; --border: #E1E1E0;
             --primary: #0081C9; --primary-soft: #e0f5fa; --danger: #d93025;
             --radius: 6px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+            --col-width: 140px; /* Wider columns */
+            --room-col-width: 160px;
         }
 
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         /* --- UTILS --- */
         .hidden { display: none !important; }
@@ -22,10 +24,10 @@
         .gap-10 { gap: 10px; }
         
         /* --- HEADER --- */
-        .top-bar { padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--bg-body); height: 50px; }
-        .brand { font-weight: 700; font-size: 1.1em; }
+        .top-bar { padding: 10px 20px; border-bottom: 1px solid var(--border); background: var(--bg-body); height: 50px; flex-shrink: 0; }
+        .brand { font-weight: 700; font-size: 1.1em; display: flex; align-items: center; gap: 10px; }
         
-        button { padding: 8px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: white; cursor: pointer; transition: 0.1s; font-size: 0.9em; }
+        button { padding: 8px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: white; cursor: pointer; transition: 0.1s; font-size: 0.9em; white-space: nowrap; }
         button:hover { background: var(--bg-subtle); }
         button.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
         button.primary:hover { opacity: 0.9; }
@@ -33,60 +35,73 @@
         button.icon-btn { border: none; background: transparent; padding: 5px; font-size: 1.2em; }
 
         /* --- CALENDAR --- */
-        .calendar-wrapper { flex: 1; overflow: auto; position: relative; scroll-behavior: smooth; }
+        .calendar-wrapper { flex: 1; overflow: auto; position: relative; scroll-behavior: auto; /* Manual scroll control */ }
         
         table { 
             border-collapse: separate; 
             border-spacing: 0; 
-            width: 100%; 
-            /* Forced min-width to ensure cells are wide (Big table feel) */
-            min-width: 1800px; 
+            table-layout: fixed; 
         }
 
+        /* Cells */
         th, td { 
             border-bottom: 1px solid var(--border); 
             border-right: 1px dashed var(--border); 
-            height: 70px; /* Taller rows for apartments */
+            height: 80px; 
+            width: var(--col-width);
+            min-width: var(--col-width);
             position: relative; 
             box-sizing: border-box; 
+            padding: 0;
         }
         
-        /* Sticky Headers */
+        /* Headers */
         thead th { 
             position: sticky; top: 0; background: var(--bg-body); z-index: 20; 
-            padding: 10px; font-size: 0.9em; border-bottom: 2px solid var(--border); 
+            height: 50px; border-bottom: 2px solid var(--border);
+            font-size: 0.9em;
         }
         
         /* Sticky Room Column */
         .room-col { 
             position: sticky; left: 0; background: var(--bg-subtle); z-index: 30; 
-            width: 180px; min-width: 180px; padding-left: 15px; font-weight: 600; 
+            width: var(--room-col-width); min-width: var(--room-col-width); max-width: var(--room-col-width);
+            padding-left: 15px; font-weight: 600; 
             border-right: 2px solid var(--border); text-align: left; 
-            display: flex; align-items: center; /* Vertically center text */
+            display: flex; align-items: center;
         }
+        td.room-col { z-index: 10; } /* Lower z-index for body room cells */
         
+        /* TOP LEFT CORNER FIX */
+        thead th.room-col { 
+            z-index: 40 !important; 
+            background: var(--bg-body);
+            border-bottom: 2px solid var(--border);
+        }
+
         .today-col { background-color: #e8f0fe !important; }
 
         /* Booking Pills */
         .booking-block { 
-            position: absolute; top: 8px; bottom: 8px; left: 0; right: 0; 
+            position: absolute; top: 10px; bottom: 10px; left: 0; right: 0; 
             background: var(--primary-soft); color: var(--primary); 
-            font-size: 0.85em; font-weight: 500;
+            font-size: 0.85em; font-weight: 600;
             display: flex; align-items: center; justify-content: center; 
             cursor: pointer; z-index: 5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+            transition: transform 0.1s;
         }
-        .booking-block:hover { filter: brightness(0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .booking-block:hover { transform: scaleY(1.05); filter: brightness(0.95); z-index: 15; }
         .b-start { border-top-left-radius: var(--radius); border-bottom-left-radius: var(--radius); left: 6px; }
         .b-end { border-top-right-radius: var(--radius); border-bottom-right-radius: var(--radius); right: 6px; }
         
         /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 100; justify-content: center; align-items: center; display: none; }
-        .modal-card { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: var(--shadow); }
+        .modal-card { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto; }
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 0.8em; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
         input, select { padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; box-sizing: border-box; }
         
-        .room-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; align-items: center; }
+        .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
         .room-item:last-child { border: none; }
 
         /* --- AUTH SCREEN --- */
@@ -216,8 +231,7 @@
         let tokenClient;
         let rootFolderId = null;
         let bookingsData = [];
-        // DEFAULT TO CROATIAN (hr)
-        let configData = { rooms: ["Soba 1", "Soba 2", "App A"], lang: "hr" };
+        let configData = { rooms: ["Soba 1", "Soba 2", "App A"], lang: "hr" }; // Default HR
         
         // --- TRANSLATIONS ---
         const i18n = {
@@ -237,7 +251,7 @@
             }
         };
 
-        // --- AUTHENTICATION & STARTUP ---
+        // --- AUTH & STARTUP ---
         function gapiLoaded() {
             gapi.load('client', async () => {
                 await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
@@ -249,9 +263,7 @@
                         document.getElementById('app-screen').classList.remove('hidden');
                         await initDriveStructure();
                         await syncData();
-                    } catch (e) {
-                        localStorage.removeItem('g_token'); location.reload();
-                    }
+                    } catch (e) { localStorage.removeItem('g_token'); location.reload(); }
                 }
             });
         }
@@ -261,8 +273,7 @@
                 client_id: CLIENT_ID, scope: SCOPES,
                 callback: async (resp) => {
                     if (resp.error) throw resp;
-                    const token = gapi.client.getToken();
-                    localStorage.setItem('g_token', JSON.stringify(token));
+                    localStorage.setItem('g_token', JSON.stringify(gapi.client.getToken()));
                     document.getElementById('auth-screen').classList.add('hidden');
                     document.getElementById('app-screen').classList.remove('hidden');
                     await initDriveStructure();
@@ -272,24 +283,17 @@
         }
 
         function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
-
         function handleSignoutClick() {
             const token = gapi.client.getToken();
             if (token) google.accounts.oauth2.revoke(token.access_token);
-            gapi.client.setToken('');
-            localStorage.removeItem('g_token');
-            location.reload();
+            gapi.client.setToken(''); localStorage.removeItem('g_token'); location.reload();
         }
 
-        // --- DRIVE & DATA SYNC ---
+        // --- DRIVE & DATA ---
         async function initDriveStructure() {
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
             const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
-            if (res.result.files.length > 0) rootFolderId = res.result.files[0].id;
-            else {
-                const f = await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' });
-                rootFolderId = f.result.id;
-            }
+            rootFolderId = res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' })).result.id;
             await ensureFolderExists('customers', rootFolderId);
         }
 
@@ -300,22 +304,21 @@
         }
 
         async function syncData() {
-            document.getElementById('txt-sync').innerText = "...";
+            const btn = document.getElementById('txt-sync');
+            const origText = btn.innerText;
+            btn.innerText = "...";
             
-            // 1. Load CONFIG
+            // 1. Config
             const configFileId = await findFile('config.json');
             if (configFileId) {
                 const res = await gapi.client.drive.files.get({ fileId: configFileId, alt: 'media' });
-                // Merge config, don't overwrite blindly if keys missing
-                const cloudConfig = res.result;
-                if(cloudConfig.rooms) configData.rooms = cloudConfig.rooms;
-                if(cloudConfig.lang) configData.lang = cloudConfig.lang;
+                const cloud = res.result;
+                if(cloud.rooms) configData.rooms = cloud.rooms;
+                if(cloud.lang) configData.lang = cloud.lang;
             }
-            
-            // Apply Settings
             applyLanguage(configData.lang);
-            
-            // 2. Load BOOKINGS
+
+            // 2. Bookings
             const csvFileId = await findFile('bookings.csv');
             if (csvFileId) {
                 const res = await gapi.client.drive.files.get({ fileId: csvFileId, alt: 'media' });
@@ -324,38 +327,38 @@
             
             await runPrivacyCleanup();
             renderCalendar();
-            document.getElementById('txt-sync').innerText = i18n[configData.lang].sync;
+            btn.innerText = origText;
         }
 
         async function saveAllToDrive() {
-            document.getElementById('txt-sync').innerText = "Saving...";
+            const btn = document.getElementById('txt-sync');
+            btn.innerText = "Saving...";
             
             // Save Config
-            const configFileId = await findFile('config.json');
-            const configContent = JSON.stringify(configData);
-            if(configFileId) await updateFile(configFileId, configContent, 'application/json');
-            else await createFile('config.json', configContent, rootFolderId, 'application/json');
+            const confId = await findFile('config.json');
+            const confContent = JSON.stringify(configData);
+            if(confId) await updateFile(confId, confContent, 'application/json');
+            else await createFile('config.json', confContent, rootFolderId, 'application/json');
 
             // Save CSV
             const csvContent = toCSV(bookingsData);
-            const csvFileId = await findFile('bookings.csv');
-            if (csvFileId) {
-                const meta = await gapi.client.drive.files.get({ fileId: csvFileId, fields: 'modifiedTime' });
+            const csvId = await findFile('bookings.csv');
+            if (csvId) {
+                const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' });
                 const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
-                if (hours > 12) await copyFile(csvFileId, 'bookings_12h.csv');
-                if (hours > 24) await copyFile(csvFileId, 'bookings_1day.csv');
-                await updateFile(csvFileId, csvContent, 'text/csv');
+                if (hours > 12) await copyFile(csvId, 'bookings_12h.csv');
+                if (hours > 24) await copyFile(csvId, 'bookings_1day.csv');
+                await updateFile(csvId, csvContent, 'text/csv');
             } else {
                 await createFile('bookings.csv', csvContent, rootFolderId, 'text/csv');
             }
-            document.getElementById('txt-sync').innerText = i18n[configData.lang].sync;
+            btn.innerText = i18n[configData.lang].sync;
         }
 
         // --- APP LOGIC ---
         function applyLanguage(lang) {
             configData.lang = lang;
             const t = i18n[lang];
-            // Update Text
             document.getElementById('txt-brand').innerText = t.brand;
             document.getElementById('txt-today').innerText = t.today;
             document.getElementById('txt-rooms').innerText = t.rooms;
@@ -371,16 +374,11 @@
             document.getElementById('lbl-manage-rooms').innerText = t.manage;
             document.getElementById('txt-login-desc').innerText = t.loginDesc;
             document.getElementById('txt-btn-login').innerText = t.btnLogin;
-            
-            // Re-render calendar to update day names
-            if(document.getElementById('calendar').innerHTML !== "") {
-                renderCalendar();
-            }
+            if(document.getElementById('calendar').innerHTML !== "") renderCalendar();
         }
 
         function toggleLang() {
-            const newLang = configData.lang === 'en' ? 'hr' : 'en';
-            applyLanguage(newLang);
+            applyLanguage(configData.lang === 'en' ? 'hr' : 'en');
             saveAllToDrive(); 
         }
 
@@ -406,7 +404,7 @@
         }
 
         function removeRoom(idx) {
-            if(confirm('Remove this room?')) {
+            if(confirm('Delete room?')) {
                 configData.rooms.splice(idx, 1);
                 openRoomsModal(); renderCalendar(); saveAllToDrive();
             }
@@ -420,9 +418,9 @@
             const today = new Date();
             today.setHours(0,0,0,0);
             
-            // VIEW SCALE: -3 days to +18 days (3 Weeks)
+            // Range: 2 days past, 30 days future
             const dates = [];
-            for(let i=-3; i<18; i++) {
+            for(let i=-2; i<30; i++) {
                 const d = new Date(today);
                 d.setDate(today.getDate() + i);
                 dates.push(d);
@@ -435,7 +433,6 @@
                 const isToday = d.getTime() === today.getTime();
                 const cls = isToday ? 'today-col' : '';
                 const style = (d.getDay()==0||d.getDay()==6) ? 'background:#f9f9f9;' : '';
-                // USE LOCALE STRING FOR CORRECT LANGUAGE
                 const dayName = d.toLocaleDateString(configData.lang, {weekday:'short'});
                 thead += `<th class="${cls}" style="${style}" data-date="${iso}">${d.getDate()}<br><span style="font-weight:400; font-size:0.8em">${dayName}</span></th>`;
             });
@@ -443,14 +440,13 @@
 
             // BODY
             configData.rooms.forEach(room => {
-                thead += `<tr><td class="room-col"><div>${room}</div></td>`;
+                thead += `<tr><td class="room-col">${room}</td>`;
                 dates.forEach(d => {
                     const iso = d.toISOString().split('T')[0];
                     const isToday = d.getTime() === today.getTime();
                     const cls = isToday ? 'today-col' : '';
                     
                     const b = bookingsData.find(x => x.room === room && iso >= x.start && iso < x.end);
-                    
                     let cellContent = '';
                     if(b) {
                         let classes = 'booking-block';
@@ -466,24 +462,32 @@
             table.innerHTML = thead;
 
             document.getElementById('b-room').innerHTML = configData.rooms.map(r => `<option value="${r}">${r}</option>`).join('');
+            
+            // Align "Today" to start of view (Hide past days)
             setTimeout(goToToday, 100);
         }
 
         function goToToday() {
             const todayIso = new Date().toISOString().split('T')[0];
             const el = document.querySelector(`th[data-date="${todayIso}"]`);
-            if(el) el.scrollIntoView({behavior: "smooth", inline: "center"});
+            const container = document.getElementById('calendar-container');
+            if(el && container) {
+                // Scroll specifically so "Today" is at the left edge (after sticky col)
+                const roomColWidth = 160; // Matches CSS var
+                container.scrollLeft = el.offsetLeft - roomColWidth;
+            }
         }
 
         // --- BOOKING LOGIC ---
         document.getElementById('booking-form').onsubmit = async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-save');
-            btn.disabled = true; btn.innerText = "Processing...";
+            btn.disabled = true; btn.innerText = "...";
 
             const id = document.getElementById('booking-id').value || crypto.randomUUID();
             const isNew = !document.getElementById('booking-id').value;
             const files = document.getElementById('b-photos').files;
+            
             let folderId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.folderId || "");
 
             if(files.length > 0) {
