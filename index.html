@@ -5,151 +5,377 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hostel Manager</title>
     <style>
-        :root { --bg: #f4f4f4; --surface: #fff; --primary: #2196F3; --text: #333; }
-        body { font-family: sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--text); }
-        
-        /* Layout */
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .controls { margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; }
-        
-        /* Buttons */
-        button { padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; background: var(--primary); color: white; }
-        button.secondary { background: #757575; }
-        button.danger { background: #f44336; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        /* --- DESIGN SYSTEM (Notion-like) --- */
+        :root {
+            --bg-body: #FFFFFF;
+            --bg-subtle: #F7F7F5;
+            --bg-modal: #FFFFFF;
+            --text-main: #37352F;
+            --text-muted: #787774;
+            --border: #E1E1E0;
+            --primary: #2eaadc;
+            --primary-soft: #e0f5fa;
+            --booked-bg: #E3E2E0; 
+            --booked-text: #37352F;
+            --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 6px;
+        }
 
-        /* Calendar Grid */
-        .calendar-wrapper { overflow-x: auto; background: var(--surface); padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .calendar-table { border-collapse: collapse; width: 100%; min-width: 800px; }
-        .calendar-table th, .calendar-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .calendar-table th { background: #eee; position: sticky; left: 0; z-index: 10; }
-        .room-row th { background: #e3f2fd; text-align: left; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- LAYOUT --- */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        /* --- HEADER --- */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-body);
+        }
         
-        /* Booking Visuals */
-        .booking-cell { background-color: #bbdefb; cursor: pointer; position: relative; font-size: 0.8em; }
-        .booking-cell:hover { background-color: #90caf9; }
+        .brand {
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* --- BUTTONS --- */
+        button {
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-body);
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.1s ease;
+            font-weight: 500;
+        }
+        button:hover { background: var(--bg-subtle); }
+        button.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
+        button.primary:hover { opacity: 0.9; }
+        button.text-only { border: none; background: transparent; color: var(--text-muted); }
+        button.text-only:hover { color: var(--text-main); background: transparent; }
+
+        /* --- CALENDAR VIEW --- */
+        .calendar-container {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+            background: var(--bg-body);
+        }
+
+        table {
+            border-collapse: separate; 
+            border-spacing: 0;
+            width: 100%;
+            min-width: 1000px; /* Ensure horizontal scroll */
+        }
+
+        th, td {
+            border-bottom: 1px solid var(--border);
+            border-right: 1px dashed var(--border);
+            padding: 0;
+            height: 50px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Sticky Headers */
+        thead th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-body);
+            z-index: 20;
+            padding: 10px;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.85em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Sticky Room Column */
+        .room-col {
+            position: sticky;
+            left: 0;
+            background: var(--bg-subtle);
+            z-index: 10;
+            width: 150px;
+            min-width: 150px;
+            font-weight: 600;
+            padding: 0 16px;
+            border-right: 2px solid var(--border); /* Stronger divider */
+            text-align: left;
+            display: flex;
+            align-items: center;
+            height: 50px; /* Match td height */
+        }
+
+        /* Weekend Highlighting */
+        .is-weekend { background-color: #fafafa; }
+
+        /* --- BOOKING PILLS --- */
+        .booking-block {
+            position: absolute;
+            top: 6px;
+            bottom: 6px;
+            left: 0;
+            right: 0;
+            background-color: var(--primary-soft);
+            color: var(--primary);
+            font-size: 0.75em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            z-index: 5;
+            transition: transform 0.1s;
+        }
         
-        /* Modal */
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; }
+        .booking-block:hover { filter: brightness(0.95); transform: scaleY(1.05); }
+
+        /* Logic for connected cells visually */
+        .b-start { border-top-left-radius: var(--radius); border-bottom-left-radius: var(--radius); left: 4px;}
+        .b-end { border-top-right-radius: var(--radius); border-bottom-right-radius: var(--radius); right: 4px; }
+        .b-middle { border-radius: 0; }
         
-        /* Utility */
+        /* --- AUTH SCREEN --- */
+        #auth-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: var(--bg-subtle);
+        }
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-card {
+            background: var(--bg-modal);
+            width: 100%;
+            max-width: 450px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 1px solid var(--border);
+            padding: 30px;
+            animation: slideUp 0.2s ease-out;
+        }
+        
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; }}
+
+        .form-grid { display: grid; gap: 16px; margin-top: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 0.8em; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input, select {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1em;
+            font-family: inherit;
+            background: var(--bg-subtle);
+        }
+        input:focus, select:focus { outline: 2px solid var(--primary-soft); border-color: var(--primary); background: white; }
+
+        .file-upload {
+            border: 2px dashed var(--border);
+            padding: 20px;
+            text-align: center;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+        .file-upload:hover { background: var(--bg-subtle); border-color: var(--text-muted); }
+
+        .status-badge {
+            font-size: 0.75em;
+            padding: 4px 8px;
+            border-radius: 100px;
+            background: #eee;
+            color: #666;
+        }
+        .status-badge.active { background: #d3e5ff; color: #0044aa; }
+
         .hidden { display: none !important; }
-        .status-bar { font-size: 0.9em; color: #666; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <!-- Auth Screen -->
-    <div id="auth-screen" class="container" style="text-align: center; margin-top: 100px;">
-        <h1>Hostel Manager</h1>
-        <p>Login with the Hostel Gmail account to access the drive.</p>
-        <button onclick="handleAuthClick()">Login with Google</button>
-    </div>
-
-    <!-- Main App -->
-    <div id="app-screen" class="hidden">
-        <div class="header">
-            <h3>Hostel Calendar</h3>
-            <div>
-                <span id="user-email" style="margin-right: 10px; font-size: 0.8em;"></span>
-                <button class="secondary" onclick="handleSignoutClick()">Signout</button>
-            </div>
-        </div>
-
-        <div class="container">
-            <div class="controls">
-                <button onclick="syncData()">🔄 Sync / Refresh</button>
-                <button onclick="openBookingModal()">+ New Booking</button>
-                <button onclick="configureRooms()" class="secondary">⚙️ Edit Rooms</button>
-            </div>
-            <div id="status-msg" class="status-bar">Ready</div>
-
-            <div class="calendar-wrapper">
-                <table class="calendar-table" id="calendar">
-                    <!-- Calendar generated by JS -->
-                </table>
-            </div>
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1 style="margin-bottom: 10px;">🏨 Hostel OS</h1>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">Secure management system backed by Google Drive</p>
+            <button class="primary" style="width: 100%; padding: 12px;" onclick="handleAuthClick()">Sign in with Google</button>
         </div>
     </div>
 
-    <!-- Booking Modal -->
-    <div id="booking-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="modal-title">New Booking</h2>
-            <form id="booking-form">
+    <!-- MAIN APP -->
+    <div id="app-screen" class="app-container hidden">
+        
+        <!-- Navbar -->
+        <header class="top-bar">
+            <div class="brand">
+                <span>📅 Availability</span>
+                <span id="sync-status" class="status-badge">Synced</span>
+            </div>
+            
+            <div class="toolbar">
+                <span id="user-email" style="font-size: 0.8em; color: var(--text-muted);"></span>
+                <button onclick="syncData()">🔄 Sync</button>
+                <button onclick="configureRooms()">⚙️ Rooms</button>
+                <button class="primary" onclick="openBookingModal()">+ New Booking</button>
+                <button class="text-only" onclick="handleSignoutClick()">Log out</button>
+            </div>
+        </header>
+
+        <!-- Calendar Timeline -->
+        <div class="calendar-container">
+            <table id="calendar">
+                <!-- Javascript will inject data here -->
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="booking-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 id="modal-title" style="margin:0;">Reservation</h2>
+                <button class="text-only" onclick="closeModal()" style="font-size:1.2em;">&times;</button>
+            </div>
+            
+            <form id="booking-form" class="form-grid">
                 <input type="hidden" id="booking-id">
-                <div class="form-group">
-                    <label>Room</label>
-                    <select id="b-room" required></select>
-                </div>
+                
                 <div class="form-group">
                     <label>Guest Name</label>
-                    <input type="text" id="b-name" required>
+                    <input type="text" id="b-name" required placeholder="John Doe">
                 </div>
-                <div class="form-group">
-                    <label>Platform (Booking, Airbnb, etc.)</label>
-                    <input type="text" id="b-platform">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Room</label>
+                        <select id="b-room" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Platform</label>
+                        <select id="b-platform">
+                            <option value="Direct">Direct</option>
+                            <option value="Booking.com">Booking.com</option>
+                            <option value="Airbnb">Airbnb</option>
+                            <option value="Expedia">Expedia</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Dates (In - Out)</label>
-                    <div style="display:flex; gap:5px;">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Check-in</label>
                         <input type="date" id="b-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Check-out</label>
                         <input type="date" id="b-end" required>
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Contact</label>
-                    <input type="tel" id="b-phone" placeholder="Phone">
-                    <input type="email" id="b-email" placeholder="Email" style="margin-top:5px;">
+                    <label>Contact Info</label>
+                    <input type="tel" id="b-phone" placeholder="+1 234 567 890">
+                    <input type="email" id="b-email" placeholder="guest@email.com" style="margin-top:5px;">
                 </div>
-                <div class="form-group" id="photo-section">
-                    <label>Photos (Max 3)</label>
-                    <input type="file" id="b-photos" multiple accept="image/*">
+
+                <div class="form-group">
+                    <label>Evidentiary Photos</label>
+                    <input type="file" id="b-photos" multiple accept="image/*" class="file-upload">
+                    <small style="color:var(--text-muted)">Uploaded to secured Drive folder. Auto-deletes 24h after checkout.</small>
                 </div>
-                
-                <div id="action-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit">Save Booking</button>
-                    <button type="button" class="secondary" onclick="closeModal()">Cancel</button>
+
+                <div id="contact-buttons" class="hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                    <a id="btn-call" href="#" style="text-decoration:none;"><button type="button" style="width:100%">📞 Call</button></a>
+                    <a id="btn-email" href="#" style="text-decoration:none;"><button type="button" style="width:100%">📧 Email</button></a>
                 </div>
-                
-                <div id="contact-buttons" class="hidden" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
-                    <a id="btn-call" href="#" style="text-decoration:none;"><button type="button">📞 Call</button></a>
-                    <a id="btn-email" href="#" style="text-decoration:none;"><button type="button">📧 Email</button></a>
+
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" class="primary" style="flex:1;">Save Reservation</button>
+                    <button type="button" onclick="deleteBooking()" id="btn-delete" class="hidden" style="color:red; background:#fff0f0; border-color:#ffcccc;">Delete</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- LOGIC SCRIPT -->
     <script>
         // --- CONFIGURATION ---
-        const CLIENT_ID = '37488392612-d0sbbhledoekidrovu6bt5q1m8emja6d.apps.googleusercontent.com'; // <--- PASTE HERE
-        const API_KEY = 'AIzaSyD8532gK5ngGyKry-7TACkEf86G5I-r4pQ';     // <--- PASTE HERE
+        const CLIENT_ID = '37488392612-d0sbbhledoekidrovu6bt5q1m8emja6d.apps.googleusercontent.com'; // <--- PASTE YOUR CLIENT ID
+        const API_KEY = 'AIzaSyD8532gK5ngGyKry-7TACkEf86G5I-r4pQ';     // <--- PASTE YOUR API KEY
         const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-        // --- APP STATE ---
+        // --- STATE ---
         let tokenClient;
         let gapiInited = false;
         let gisInited = false;
         let rootFolderId = null;
         let bookingsData = [];
-        let roomsData = ["Room 1", "Room 2", "Apartment A"]; // Default
+        let roomsData = ["Room 101", "Room 102", "Dorm A", "Suite B"];
 
-        // --- AUTHENTICATION ---
+        // --- AUTH ---
         function gapiLoaded() {
             gapi.load('client', async () => {
                 await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
-                gapiInited = true;
-                maybeEnableButtons();
+                gapiInited = true; checkAuth();
             });
         }
-
         function gisLoaded() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID, scope: SCOPES,
@@ -161,18 +387,12 @@
                     await syncData();
                 },
             });
-            gisInited = true;
-            maybeEnableButtons();
+            gisInited = true; checkAuth();
         }
-
-        function maybeEnableButtons() {
-            if (gapiInited && gisInited) console.log("Google Libraries Loaded");
+        function checkAuth() {
+            if(gapiInited && gisInited) console.log("System Ready");
         }
-
-        function handleAuthClick() {
-            tokenClient.requestAccessToken({ prompt: 'consent' });
-        }
-
+        function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
         function handleSignoutClick() {
             const token = gapi.client.getToken();
             if (token !== null) {
@@ -182,330 +402,264 @@
             }
         }
 
-        // --- DRIVE FILE SYSTEM ---
+        // --- DRIVE LOGIC ---
         async function initDriveStructure() {
-            updateStatus("Checking Drive folders...");
-            // 1. Find Root Folder
+            setStatus("Connecting...", false);
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
-            const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id, name)' });
-            
-            if (res.result.files.length > 0) {
-                rootFolderId = res.result.files[0].id;
-            } else {
-                // Create Root
-                const fileMetadata = { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' };
-                const folder = await gapi.client.drive.files.create({ resource: fileMetadata, fields: 'id' });
+            const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
+            if (res.result.files.length > 0) rootFolderId = res.result.files[0].id;
+            else {
+                const folder = await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' });
                 rootFolderId = folder.result.id;
             }
-            // Ensure 'customers' subfolder exists
             await ensureFolderExists('customers', rootFolderId);
         }
 
         async function ensureFolderExists(name, parentId) {
             const q = `mimeType='application/vnd.google-apps.folder' and name='${name}' and '${parentId}' in parents and trashed=false`;
             const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
-            if (res.result.files.length > 0) return res.result.files[0].id;
-            
-            const fileMetadata = { name: name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] };
-            const folder = await gapi.client.drive.files.create({ resource: fileMetadata, fields: 'id' });
-            return folder.result.id;
+            return res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] }, fields: 'id' })).result.id;
         }
 
-        // --- DATA SYNC & BACKUP ---
         async function syncData() {
-            updateStatus("Syncing...");
-            
-            // 1. Run Cleanup Logic (Privacy)
+            setStatus("Syncing...", true);
             await runPrivacyCleanup();
-
-            // 2. Fetch CSV
+            
+            // Sync Rooms Config if exists (optional feature, otherwise hardcoded)
+            // Ideally we save rooms to a file too, but keeping it simple for now or using CSV headers
+            
             const fileId = await findFile('bookings.csv');
             if (fileId) {
                 const res = await gapi.client.drive.files.get({ fileId: fileId, alt: 'media' });
                 bookingsData = parseCSV(res.body);
-            } else {
-                bookingsData = []; // New setup
             }
-            
             renderCalendar();
-            updateStatus("Sync Complete");
+            setStatus("Synced just now", false);
         }
 
         async function saveDataToDrive() {
-            updateStatus("Saving to Cloud...");
+            setStatus("Saving...", true);
             const csvContent = toCSV(bookingsData);
-            
-            // Handle Backups
             const mainFileId = await findFile('bookings.csv');
             
             if (mainFileId) {
-                // Check timestamp to decide if we update backups
-                const fileMeta = await gapi.client.drive.files.get({ fileId: mainFileId, fields: 'modifiedTime' });
-                const modTime = new Date(fileMeta.result.modifiedTime);
-                const now = new Date();
-                const hoursSinceMod = (now - modTime) / 36e5;
-
-                // If > 12 hours, save to _12h
-                if (hoursSinceMod > 12) await copyFile(mainFileId, 'bookings_12h.csv');
-                // If > 24 hours, save to _1day
-                if (hoursSinceMod > 24) await copyFile(mainFileId, 'bookings_1day.csv');
-
-                // Update Main
+                // Check for backups
+                const meta = await gapi.client.drive.files.get({ fileId: mainFileId, fields: 'modifiedTime' });
+                const hoursSince = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
+                if (hoursSince > 12) await copyFile(mainFileId, 'bookings_12h.csv');
+                if (hoursSince > 24) await copyFile(mainFileId, 'bookings_1day.csv');
                 await updateFile(mainFileId, csvContent);
             } else {
-                // Create New
                 await createFile('bookings.csv', csvContent, rootFolderId);
             }
-            updateStatus("Saved successfully.");
+            setStatus("Saved", false);
         }
 
-        // --- PRIVACY CLEANUP ---
         async function runPrivacyCleanup() {
             const now = new Date();
             let changed = false;
-
             for (let b of bookingsData) {
                 if (!b.folderId) continue;
-                
-                const end = new Date(b.end);
-                // Add 24 hours to checkout time
-                end.setHours(end.getHours() + 24);
-
+                const end = new Date(b.end); end.setHours(end.getHours() + 24);
                 if (now > end) {
-                    console.log(`Deleting data for expired booking: ${b.guestName}`);
-                    try {
-                        await gapi.client.drive.files.delete({ fileId: b.folderId });
-                        b.folderId = ""; // Remove reference
-                        b.photos = "EXPIRED"; 
-                        changed = true;
-                    } catch (e) { console.error("Cleanup error", e); }
+                    try { await gapi.client.drive.files.delete({ fileId: b.folderId }); b.folderId = ""; changed = true; } catch(e){}
                 }
             }
-            if (changed) await saveDataToDrive();
+            if(changed) await saveDataToDrive();
         }
 
-        // --- BOOKING LOGIC ---
+        // --- APP LOGIC ---
         document.getElementById('booking-form').onsubmit = async (e) => {
             e.preventDefault();
-            updateStatus("Processing...");
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.innerText = "Processing...";
             
+            const id = document.getElementById('booking-id').value || crypto.randomUUID();
             const isNew = !document.getElementById('booking-id').value;
-            const id = isNew ? crypto.randomUUID() : document.getElementById('booking-id').value;
             
-            // Photo Upload
+            // Photo handling
             const fileInput = document.getElementById('b-photos');
-            let folderId = "";
+            let folderId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.folderId || "");
             
             if (fileInput.files.length > 0) {
-                const custParent = await ensureFolderExists('customers', rootFolderId);
-                // Random code name folder
+                const custRoot = await ensureFolderExists('customers', rootFolderId);
                 const codeName = Math.random().toString(36).substring(7);
-                folderId = await ensureFolderExists(codeName, custParent);
-                
-                for (let file of fileInput.files) {
-                    await uploadFile(file, folderId);
-                }
-            } else if (!isNew) {
-                // Keep old folder ID if editing
-                const old = bookingsData.find(b => b.id === id);
-                if(old) folderId = old.folderId;
+                folderId = await ensureFolderExists(codeName, custRoot);
+                for (let f of fileInput.files) await uploadFile(f, folderId);
             }
 
             const booking = {
-                id: id,
+                id, folderId,
                 room: document.getElementById('b-room').value,
                 guestName: document.getElementById('b-name').value,
                 platform: document.getElementById('b-platform').value,
                 start: document.getElementById('b-start').value,
                 end: document.getElementById('b-end').value,
                 phone: document.getElementById('b-phone').value,
-                email: document.getElementById('b-email').value,
-                folderId: folderId
+                email: document.getElementById('b-email').value
             };
 
-            if (isNew) bookingsData.push(booking);
-            else {
-                const idx = bookingsData.findIndex(b => b.id === id);
-                if(idx !== -1) bookingsData[idx] = booking;
-            }
+            if(isNew) bookingsData.push(booking);
+            else bookingsData[bookingsData.findIndex(b=>b.id===id)] = booking;
 
-            closeModal();
-            renderCalendar();
             await saveDataToDrive();
+            renderCalendar();
+            closeModal();
+            btn.disabled = false; btn.innerText = "Save Reservation";
         };
 
-        // --- UI RENDERING ---
+        async function deleteBooking() {
+            if(!confirm("Are you sure? This removes the booking permanently.")) return;
+            const id = document.getElementById('booking-id').value;
+            bookingsData = bookingsData.filter(b => b.id !== id);
+            await saveDataToDrive();
+            renderCalendar();
+            closeModal();
+        }
+
+        // --- RENDERING ---
         function renderCalendar() {
-            const calendar = document.getElementById('calendar');
-            calendar.innerHTML = '';
+            const table = document.getElementById('calendar');
+            table.innerHTML = '';
             
-            // Generate Dates (Next 30 days)
             const today = new Date();
-            const dates = [];
-            for(let i=0; i<30; i++) {
-                const d = new Date(today);
-                d.setDate(today.getDate() + i);
-                dates.push(d.toISOString().split('T')[0]);
-            }
-
+            const daysToShow = 30;
+            const dateHeaders = [];
+            
             // Header Row
-            const trHead = document.createElement('tr');
-            trHead.innerHTML = '<th>Room</th>' + dates.map(d => `<th>${d.slice(5)}</th>`).join('');
-            calendar.appendChild(trHead);
+            let thead = '<thead><tr><th class="room-col" style="z-index:30;">Room</th>';
+            for(let i=0; i<daysToShow; i++) {
+                const d = new Date(today); d.setDate(today.getDate() + i);
+                const iso = d.toISOString().split('T')[0];
+                const dayName = d.toLocaleDateString('en-US', {weekday:'short'});
+                const dayNum = d.getDate();
+                const isWeekend = (d.getDay() === 0 || d.getDay() === 6) ? 'background:#fafafa;' : '';
+                thead += `<th style="${isWeekend}">${dayName}<br><span style="color:var(--text-main)">${dayNum}</span></th>`;
+                dateHeaders.push(iso);
+            }
+            thead += '</tr></thead>';
+            table.innerHTML = thead;
 
-            // Room Rows
+            // Body
+            const tbody = document.createElement('tbody');
             roomsData.forEach(room => {
                 const tr = document.createElement('tr');
-                tr.className = 'room-row';
-                tr.innerHTML = `<th>${room}</th>`;
+                // Room Name
+                tr.innerHTML = `<td class="room-col"><div>${room}</div></td>`;
                 
-                dates.forEach(date => {
-                    // Find booking for this room and date
-                    const booking = bookingsData.find(b => 
-                        b.room === room && 
-                        date >= b.start && 
-                        date < b.end // Checkout day is usually free for next guest
-                    );
-
+                dateHeaders.forEach(date => {
                     const td = document.createElement('td');
+                    const dObj = new Date(date);
+                    if(dObj.getDay()===0 || dObj.getDay()===6) td.className = 'is-weekend';
+                    
+                    // Check bookings
+                    const booking = bookingsData.find(b => date >= b.start && date < b.end && b.room === room);
+                    
                     if (booking) {
-                        td.className = 'booking-cell';
-                        td.innerText = booking.guestName;
-                        td.onclick = () => openBookingModal(booking);
+                        const div = document.createElement('div');
+                        div.className = 'booking-block';
+                        div.innerText = booking.guestName;
+                        div.onclick = () => openBookingModal(booking);
+                        
+                        // Visual Styling logic for start/end/middle
+                        if (date === booking.start) div.classList.add('b-start');
+                        if (getNextDate(date) === booking.end) div.classList.add('b-end');
+                        if (date !== booking.start && getNextDate(date) !== booking.end) div.classList.add('b-middle');
+                        
+                        td.appendChild(div);
                     }
                     tr.appendChild(td);
                 });
-                calendar.appendChild(tr);
+                tbody.appendChild(tr);
             });
+            table.appendChild(tbody);
             
-            // Populate Select in Form
-            const select = document.getElementById('b-room');
-            select.innerHTML = roomsData.map(r => `<option value="${r}">${r}</option>`).join('');
+            // Update Rooms Dropdown
+            const sel = document.getElementById('b-room');
+            sel.innerHTML = roomsData.map(r => `<option value="${r}">${r}</option>`).join('');
         }
 
-        function openBookingModal(booking = null) {
-            const modal = document.getElementById('booking-modal');
-            const form = document.getElementById('booking-form');
-            const contactBtns = document.getElementById('contact-buttons');
+        function openBookingModal(b = null) {
+            const m = document.getElementById('booking-modal');
+            const f = document.getElementById('booking-form');
+            m.style.display = 'flex';
             
-            modal.style.display = 'flex';
-            modal.classList.remove('hidden');
-
-            if (booking) {
-                document.getElementById('modal-title').innerText = "Edit / View Booking";
-                document.getElementById('booking-id').value = booking.id;
-                document.getElementById('b-room').value = booking.room;
-                document.getElementById('b-name').value = booking.guestName;
-                document.getElementById('b-platform').value = booking.platform || '';
-                document.getElementById('b-start').value = booking.start;
-                document.getElementById('b-end').value = booking.end;
-                document.getElementById('b-phone').value = booking.phone || '';
-                document.getElementById('b-email').value = booking.email || '';
-                
-                // Show contact buttons
-                contactBtns.classList.remove('hidden');
-                document.getElementById('btn-call').href = `tel:${booking.phone}`;
-                document.getElementById('btn-email').href = `mailto:${booking.email}`;
+            if(b) {
+                document.getElementById('modal-title').innerText = "Edit Reservation";
+                document.getElementById('booking-id').value = b.id;
+                document.getElementById('b-name').value = b.guestName;
+                document.getElementById('b-room').value = b.room;
+                document.getElementById('b-platform').value = b.platform;
+                document.getElementById('b-start').value = b.start;
+                document.getElementById('b-end').value = b.end;
+                document.getElementById('b-phone').value = b.phone;
+                document.getElementById('b-email').value = b.email;
+                document.getElementById('contact-buttons').classList.remove('hidden');
+                document.getElementById('btn-delete').classList.remove('hidden');
+                document.getElementById('btn-call').href = `tel:${b.phone}`;
+                document.getElementById('btn-email').href = `mailto:${b.email}`;
             } else {
-                document.getElementById('modal-title').innerText = "New Booking";
-                form.reset();
+                document.getElementById('modal-title').innerText = "New Reservation";
+                f.reset();
                 document.getElementById('booking-id').value = "";
-                contactBtns.classList.add('hidden');
+                document.getElementById('contact-buttons').classList.add('hidden');
+                document.getElementById('btn-delete').classList.add('hidden');
             }
         }
 
-        function closeModal() {
-            document.getElementById('booking-modal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('booking-modal').style.display = 'none'; }
         
         function configureRooms() {
-            const result = prompt("Enter room names separated by comma:", roomsData.join(","));
-            if(result) {
-                roomsData = result.split(",").map(s => s.trim());
-                renderCalendar();
-            }
+            const res = prompt("Comma separated rooms:", roomsData.join(","));
+            if(res) { roomsData = res.split(",").map(s=>s.trim()); renderCalendar(); }
         }
 
-        // --- HELPERS (CSV & DRIVE API) ---
-        function updateStatus(msg) {
-            document.getElementById('status-msg').innerText = msg;
+        function setStatus(msg, active) {
+            const el = document.getElementById('sync-status');
+            el.innerText = msg;
+            if(active) el.classList.add('active'); else el.classList.remove('active');
         }
 
-        // Basic CSV Parsing (assumes no commas in fields for simplicity, use | as delimiter internally)
+        // --- UTILS ---
+        function getNextDate(dateStr) {
+            const d = new Date(dateStr); d.setDate(d.getDate() + 1);
+            return d.toISOString().split('T')[0];
+        }
         function toCSV(data) {
-            const headers = ["id","room","guestName","platform","start","end","phone","email","folderId"];
-            const rows = data.map(row => headers.map(fieldName => (row[fieldName] || "").replace(/\|/g, '')).join("|"));
-            return [headers.join("|"), ...rows].join("\n");
+            const h = ["id","room","guestName","platform","start","end","phone","email","folderId"];
+            const r = data.map(o => h.map(k => (o[k]||"").replace(/\|/g,'')).join("|"));
+            return [h.join("|"), ...r].join("\n");
+        }
+        function parseCSV(txt) {
+            const [hLine, ...lines] = txt.trim().split("\n");
+            if(!hLine) return [];
+            const h = hLine.split("|");
+            return lines.map(l => { const v = l.split("|"); return h.reduce((acc,k,i)=>({...acc,[k]:v[i]}),{}); });
         }
 
-        function parseCSV(text) {
-            const lines = text.trim().split("\n");
-            if (lines.length < 2) return [];
-            const headers = lines[0].split("|");
-            return lines.slice(1).map(line => {
-                const values = line.split("|");
-                let obj = {};
-                headers.forEach((h, i) => obj[h] = values[i]);
-                return obj;
-            });
-        }
-
-        // Drive API Wrappers
+        // --- DRIVE API WRAPPERS ---
         async function findFile(name) {
-            const q = `name='${name}' and '${rootFolderId}' in parents and trashed=false`;
-            const res = await gapi.client.drive.files.list({ q: q });
-            return res.result.files.length > 0 ? res.result.files[0].id : null;
+            const res = await gapi.client.drive.files.list({ q: `name='${name}' and '${rootFolderId}' in parents and trashed=false` });
+            return res.result.files[0]?.id || null;
         }
-
-        async function createFile(name, content, parentId) {
-            const file = new Blob([content], {type: 'text/csv'});
-            const metadata = { name: name, parents: [parentId] };
-            const accessToken = gapi.auth.getToken().access_token;
+        async function createFile(n, c, p) {
             const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-            form.append('file', file);
-
-            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
-                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                body: form
-            });
+            form.append('metadata', new Blob([JSON.stringify({name:n, parents:[p]})], {type:'application/json'}));
+            form.append('file', new Blob([c], {type:'text/csv'}));
+            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method:'POST', headers:{'Authorization':'Bearer '+gapi.auth.getToken().access_token}, body:form });
         }
-
-        async function updateFile(fileId, content) {
-            const file = new Blob([content], {type: 'text/csv'});
-            const accessToken = gapi.auth.getToken().access_token;
-            
-            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-                method: 'PATCH',
-                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'text/csv' }),
-                body: file
-            });
+        async function updateFile(id, c) {
+            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, { method:'PATCH', headers:{'Authorization':'Bearer '+gapi.auth.getToken().access_token, 'Content-Type': 'text/csv'}, body: new Blob([c], {type:'text/csv'}) });
         }
-
-        async function copyFile(fileId, newName) {
-            // First check if target exists, if so delete it (simple overwrite logic)
-            const existing = await findFile(newName);
-            if(existing) await gapi.client.drive.files.delete({ fileId: existing });
-            
-            await gapi.client.drive.files.copy({
-                fileId: fileId,
-                resource: { name: newName, parents: [rootFolderId] }
-            });
+        async function copyFile(id, n) {
+            const old = await findFile(n); if(old) await gapi.client.drive.files.delete({fileId:old});
+            await gapi.client.drive.files.copy({ fileId:id, resource:{name:n, parents:[rootFolderId]} });
         }
-
-        async function uploadFile(fileObj, parentId) {
-            const metadata = { name: fileObj.name, parents: [parentId] };
-            const accessToken = gapi.auth.getToken().access_token;
+        async function uploadFile(f, p) {
             const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-            form.append('file', fileObj);
-
-            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
-                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                body: form
-            });
+            form.append('metadata', new Blob([JSON.stringify({name:f.name, parents:[p]})], {type:'application/json'}));
+            form.append('file', f);
+            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method:'POST', headers:{'Authorization':'Bearer '+gapi.auth.getToken().access_token}, body:form });
         }
 
     </script>
