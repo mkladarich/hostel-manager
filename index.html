@@ -19,7 +19,7 @@
             --font-size-cell: 0.85em;
         }
 
-        /* MOBILE OVERRIDES (Responsive) */
+        /* MOBILE OVERRIDES */
         @media (max-width: 768px) {
             :root {
                 --col-width: 48px; 
@@ -28,7 +28,6 @@
                 --font-size-cell: 0.7em;
             }
             .brand span#txt-brand { display: none; } 
-            /* Bigger Mobile Buttons */
             button { padding: 10px 12px !important; font-size: 0.95em !important; } 
             .top-bar { padding: 10px !important; height: auto !important; flex-wrap: wrap; }
         }
@@ -39,21 +38,17 @@
         .hidden { display: none !important; }
         .flex { display: flex; align-items: center; }
         .flex-btwn { display: flex; justify-content: space-between; align-items: center; }
-        .gap-5 { gap: 5px; }
         .gap-10 { gap: 10px; }
         
         /* --- HEADER --- */
-        /* Increased height and padding for bigger buttons */
         .top-bar { border-bottom: 1px solid var(--border); background: var(--bg-body); height: 65px; flex-shrink: 0; padding: 0 20px; }
         .brand { font-weight: 700; font-size: 1.2em; display: flex; align-items: center; gap: 8px; }
         
-        /* BIGGER BUTTONS (1.3x) */
+        /* BUTTONS */
         button { 
             border-radius: var(--radius); border: 1px solid var(--border); background: white; 
             cursor: pointer; transition: 0.1s; white-space: nowrap; 
-            padding: 10px 16px; /* Increased padding */
-            font-size: 1em;     /* Increased font */
-            font-weight: 500;
+            padding: 10px 16px; font-size: 1em; font-weight: 500;
         }
         button:active { background: var(--bg-subtle); transform: translateY(1px); }
         button.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
@@ -93,8 +88,7 @@
         /* Booking Pills */
         .booking-block { 
             position: absolute; top: 6px; bottom: 6px; left: 0; right: 0; 
-            color: white; /* White text for colored backgrounds */
-            font-size: var(--font-size-cell); font-weight: 500;
+            color: white; font-size: var(--font-size-cell); font-weight: 500;
             display: flex; align-items: center; justify-content: center; 
             cursor: pointer; z-index: 5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
             padding: 0 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);
@@ -108,7 +102,6 @@
         .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 0.75em; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; box-sizing: border-box; font-size: 16px; }
-        
         .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
 
         /* --- AUTH --- */
@@ -136,6 +129,7 @@
                 <button onclick="goToToday()" id="txt-today">Today</button>
             </div>
             <div class="flex gap-10">
+                <button onclick="downloadExcel()">📊 Excel</button>
                 <button onclick="toggleLang()" style="font-weight: bold;">HR/EN</button>
                 <button onclick="openRoomsModal()">⚙️</button>
                 <button onclick="syncData()">🔄</button>
@@ -245,7 +239,7 @@
             'Booking': '#003580', // Booking Blue
             'Airbnb': '#FF5A5F',  // Airbnb Red
             'Uživo': '#2E7D32',   // Direct Green
-            'Direct': '#2E7D32'   // Legacy Support
+            'Direct': '#2E7D32'
         };
 
         function gapiLoaded() {
@@ -290,7 +284,6 @@
         }
 
         async function syncData() {
-            // Config
             const cId = await findFile('config.json');
             if (cId) {
                 const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' });
@@ -298,7 +291,6 @@
                 if(r.result.lang) configData.lang = r.result.lang;
             }
             applyLanguage(configData.lang);
-            // CSV
             const csvId = await findFile('bookings.csv');
             if (csvId) {
                 const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' });
@@ -322,6 +314,26 @@
                 if (hours > 24) await copyFile(csvId, 'bookings_1day.csv');
                 await updateFile(csvId, csvContent, 'text/csv');
             } else { await createFile('bookings.csv', csvContent, rootFolderId, 'text/csv'); }
+        }
+
+        // --- EXPORT FUNCTION ---
+        function downloadExcel() {
+            // Add BOM for UTF-8 in Excel
+            let csv = '\ufeff'; 
+            csv += "Guest,Room,Platform,Check-In,Check-Out,Phone,Email\n";
+            bookingsData.forEach(b => {
+                const row = [b.guestName, b.room, b.platform, b.start, b.end, b.phone, b.email];
+                // Escape quotes
+                const csvRow = row.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",");
+                csv += csvRow + "\n";
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Hostel_Bookings_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function applyLanguage(l) {
@@ -360,7 +372,13 @@
             const table = document.getElementById('calendar'); table.innerHTML = '';
             const today = new Date(); today.setHours(0,0,0,0);
             const dates = [];
-            for(let i=-2; i<30; i++) { const d = new Date(today); d.setDate(today.getDate()+i); dates.push(d); }
+            
+            // --- TIME RANGE: 365 Days Past -> 180 Days Future ---
+            for(let i=-365; i<180; i++) { 
+                const d = new Date(today); 
+                d.setDate(today.getDate()+i); 
+                dates.push(d); 
+            }
 
             let thead = '<thead><tr><th class="room-col">Room</th>';
             dates.forEach(d => {
@@ -379,7 +397,6 @@
                     if(b) {
                         let cl = 'booking-block';
                         if(iso===b.start) cl+=' b-start'; if(getNextDate(iso)===b.end) cl+=' b-end';
-                        // COLOR LOGIC
                         const bgCol = platformColors[b.platform] || '#0081C9';
                         c = `<div class="${cl}" style="background-color:${bgCol}" onclick='openBookingModal(${JSON.stringify(b).replace(/'/g, "&#39;")})'>${b.guestName}</div>`;
                     }
@@ -390,6 +407,8 @@
             thead += '</tbody>';
             table.innerHTML = thead;
             document.getElementById('b-room').innerHTML = configData.rooms.map(r=>`<option value="${r}">${r}</option>`).join('');
+            
+            // Wait for render then scroll to today
             setTimeout(goToToday, 100);
         }
 
