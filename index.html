@@ -37,7 +37,7 @@
         button.danger { color: #d93025; border-color: #ffcccb; background: #fff5f5; }
         button.icon-btn { border: none; background: transparent; padding: 0 10px; font-size: 1.2em; }
 
-        .sync-label { font-size: 0.75em; color: var(--text-muted); margin-right: 5px; }
+        .sync-label { font-size: 0.75em; color: var(--text-muted); margin-right: 5px; font-variant-numeric: tabular-nums; }
 
         /* --- MONTH CALENDAR --- */
         .calendar-wrapper { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
@@ -82,7 +82,6 @@
         .st-yellow { background: var(--status-part); color: var(--status-part-text); font-weight:700; }
         .st-red { background: var(--status-full); color: var(--status-full-text); font-weight:700; }
 
-        /* Abbr Logic */
         .pill-abbr { display: none; font-weight: 700; text-align: center; }
 
         /* --- MOBILE OVERRIDES --- */
@@ -94,7 +93,7 @@
             .day-body { flex-direction: row; gap: 5px; }
             .room-pill { font-size: 0.8em; padding: 5px; margin-bottom: 2px; }
             
-            /* GRID OVERVIEW */
+            /* GRID VIEW */
             .month-grid.mobile-overview {
                 display: grid; grid-template-columns: repeat(7, 1fr); auto-rows: minmax(70px, auto);
             }
@@ -110,8 +109,6 @@
             .month-grid.mobile-overview .day-col { display: contents; }
             .month-grid.mobile-overview .pill-full { display: none; }
             .month-grid.mobile-overview .pill-abbr { display: block; }
-            
-            /* Small squares for grid view */
             .month-grid.mobile-overview .room-pill {
                 padding: 1px; margin: 0; width: 18px; font-size: 0.6em; text-align: center; border-radius: 2px;
             }
@@ -146,7 +143,7 @@
     <div id="app-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
         <div class="top-bar">
             <div class="header-row">
-                <div class="brand" onclick="toggleMobileView()" title="Tap to toggle Grid View">📅 <span id="txt-brand">Kalendar</span></div>
+                <div class="brand" onclick="toggleMobileView()" title="Toggle View">📅 <span id="txt-brand">Kalendar</span></div>
                 <button onclick="exportToSheets()" class="success">📄 Export Sheets</button>
                 <button onclick="toggleLang()">HR/EN</button>
                 <button onclick="handleSignoutClick()" class="danger">🚪</button>
@@ -266,16 +263,9 @@
 
         // --- DRIVE STRUCTURE ---
         async function initDriveStructure() {
-            // Find Root - sort by createdTime to grab the oldest (original) one
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
-            const res = await gapi.client.drive.files.list({ q: q, orderBy: 'createdTime', fields: 'files(id)' });
-            
-            if (res.result.files.length > 0) {
-                rootFolderId = res.result.files[0].id; // Use existing
-            } else {
-                const f = await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' });
-                rootFolderId = f.result.id;
-            }
+            const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
+            rootFolderId = res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' })).result.id;
             await ensureFolderExists('customers', rootFolderId);
             receiptFolderId = await ensureFolderExists('receipts', rootFolderId);
             backupFolderId = await ensureFolderExists('backups', rootFolderId);
@@ -286,18 +276,41 @@
             return res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: n, mimeType: 'application/vnd.google-apps.folder', parents: [p] }, fields: 'id' })).result.id;
         }
 
-        // --- SYNC WITH SORTING ---
-        async function syncData() {
-            const btn = document.getElementById('txt-sync');
-            const orig = btn.innerText; btn.innerText = "...";
+        // --- SMARTER SYNC WITH DUPLICATE CLEANUP ---
+        async function resolveFileId(fileName) {
+            // Find ALL files with this name in our folder
+            const q = `name='${fileName}' and '${rootFolderId}' in parents and trashed=false`;
+            const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id, modifiedTime)', orderBy: 'modifiedTime desc' });
             
-            // Fetch Config (Most Recent)
-            const cId = await findFileExact('config_v4.json');
-            if (cId) { const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); if(r.result.rooms) configData.rooms = r.result.rooms; if(r.result.lang) configData.lang = r.result.lang; }
+            if (res.result.files.length === 0) return null;
+            
+            // The first file is the most recently modified (Current Truth)
+            const currentFileId = res.result.files[0].id;
+
+            // If duplicates exist, delete them so phones don't get confused
+            if (res.result.files.length > 1) {
+                console.log(`Cleaning up ${res.result.files.length - 1} duplicates for ${fileName}`);
+                for (let i = 1; i < res.result.files.length; i++) {
+                    await gapi.client.drive.files.delete({ fileId: res.result.files[i].id });
+                }
+            }
+            return currentFileId;
+        }
+
+        async function syncData() {
+            const btn = document.getElementById('txt-sync'); const orig = btn.innerText; btn.innerText = "...";
+            
+            // CONFIG
+            const cId = await resolveFileId('config_master.json');
+            if (cId) { 
+                const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); 
+                if(r.result.rooms) configData.rooms = r.result.rooms; 
+                if(r.result.lang) configData.lang = r.result.lang; 
+            }
             applyLanguage(configData.lang);
             
-            // Fetch Bookings (Most Recent)
-            const csvId = await findFileExact('bookings_v4.csv');
+            // BOOKINGS
+            const csvId = await resolveFileId('bookings_master.csv');
             if (csvId) { 
                 const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); 
                 bookingsData = parseCSV(r.body); 
@@ -314,15 +327,22 @@
         async function saveAllToDrive() {
             const btn = document.getElementById('txt-sync'); btn.innerText = "Saving...";
             
-            const cId = await findFileExact('config_v4.json');
-            if(cId) await updateFile(cId, JSON.stringify(configData), 'application/json'); 
-            else await createFile('config_v4.json', JSON.stringify(configData), rootFolderId, 'application/json');
+            // CONFIG
+            let cId = await resolveFileId('config_master.json');
+            if(!cId) {
+                // Create if doesn't exist
+                await createFile('config_master.json', JSON.stringify(configData), rootFolderId, 'application/json');
+                cId = await resolveFileId('config_master.json'); // Get the ID we just created
+            } else {
+                await updateFile(cId, JSON.stringify(configData), 'application/json');
+            }
 
+            // BOOKINGS
+            let csvId = await resolveFileId('bookings_master.csv');
             const csvContent = toCSV(bookingsData);
-            const csvId = await findFileExact('bookings_v4.csv');
             
             if (csvId) {
-                // Backup if >12h old
+                // Backup logic
                 const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' });
                 const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
                 if (hours > 12) {
@@ -331,15 +351,16 @@
                 }
                 await updateFile(csvId, csvContent, 'text/csv');
             } else { 
-                await createFile('bookings_v4.csv', csvContent, rootFolderId, 'text/csv'); 
+                await createFile('bookings_master.csv', csvContent, rootFolderId, 'text/csv'); 
             }
             
+            // Update UI
             const now = new Date();
             document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
             btn.innerText = i18n[configData.lang].sync;
         }
 
-        // --- APP ---
+        // --- APP LOGIC ---
         function goToToday() { currentViewDate = new Date(); renderMonth(); }
         function changeMonth(d) { currentViewDate.setMonth(currentViewDate.getMonth() + d); renderMonth(); }
         function toggleMobileView() { document.getElementById('month-grid').classList.toggle('mobile-overview'); }
@@ -449,11 +470,9 @@
         async function runPrivacyCleanup() { const now = new Date(); let ch = false; for(let b of bookingsData) { if(!b.folderId) continue; const end = new Date(b.end); end.setHours(end.getHours()+24); if(now>end) { try{await gapi.client.drive.files.delete({fileId:b.folderId}); b.folderId=""; ch=true;}catch(e){} } } if(ch) await saveAllToDrive(); }
         function toCSV(d){const h=["id","room","guestName","platform","guests","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
         function parseCSV(t){const[h,...l]=t.trim().split("\n");if(!h)return[];const k=h.split("|");return l.map(r=>{const v=r.split("|");return k.reduce((a,c,i)=>({...a,[c]:v[i]}),{});});}
-        // FIND EXACT: Sorted by modifiedTime desc to get LATEST
-        async function findFileExact(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`, orderBy:'modifiedTime desc'});return r.result.files[0]?.id||null;}
+        
         async function createFile(n,c,p,t){const f=new FormData();f.append('metadata',new Blob([JSON.stringify({name:n,parents:[p]})],{type:'application/json'}));f.append('file',new Blob([c],{type:t}));await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:f});}
         async function updateFile(i,c,t){await fetch(`https://www.googleapis.com/upload/drive/v3/files/${i}?uploadType=media`,{method:'PATCH',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token,'Content-Type':t},body:new Blob([c],{type:t})});}
-        async function copyFile(i,n){await gapi.client.drive.files.copy({fileId:i,resource:{name:n,parents:[backupFolderId]}});}
         async function uploadFile(f,p){const d=new FormData();d.append('metadata',new Blob([JSON.stringify({name:f.name,parents:[p]})],{type:'application/json'}));d.append('file',f);const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:d});const j=await r.json(); return j.id;}
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
