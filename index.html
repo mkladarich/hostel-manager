@@ -10,9 +10,9 @@
             --bg-body: #FFFFFF; --bg-subtle: #F7F7F5; 
             --text-main: #37352F; --text-muted: #787774; --border: #E1E1E0;
             --primary: #0081C9; 
-            --status-free: #e8f5e9; --status-free-text: #2e7d32; /* Green */
-            --status-part: #fff3e0; --status-part-text: #ef6c00; /* Yellow */
-            --status-full: #ffebee; --status-full-text: #c62828; /* Red */
+            --status-free: #e8f5e9; --status-free-text: #2e7d32; 
+            --status-part: #fff3e0; --status-part-text: #ef6c00; 
+            --status-full: #ffebee; --status-full-text: #c62828; 
             --radius: 4px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
         }
 
@@ -21,6 +21,7 @@
         /* --- HEADER --- */
         .top-bar { border-bottom: 1px solid var(--border); background: var(--bg-body); padding: 10px 15px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; z-index: 50; }
         .header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        
         .brand { font-weight: 800; font-size: 1.2em; display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; }
         .brand:active { opacity: 0.6; }
 
@@ -36,11 +37,29 @@
         button.danger { color: #d93025; border-color: #ffcccb; background: #fff5f5; }
         button.icon-btn { border: none; background: transparent; padding: 0 10px; font-size: 1.2em; }
 
+        .sync-label { font-size: 0.75em; color: var(--text-muted); margin-right: 5px; }
+
         /* --- MONTH CALENDAR --- */
         .calendar-wrapper { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        .week-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 700; color: var(--text-muted); font-size: 0.8em; padding: 8px 0; border-bottom: 1px solid var(--border); background: #fafafa; flex-shrink: 0; }
-        .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); auto-rows: minmax(140px, 1fr); }
-        .day-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); background: white; padding: 2px; display: flex; flex-direction: column; min-height: 140px; }
+        
+        .week-header {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            text-align: center; font-weight: 700; color: var(--text-muted);
+            font-size: 0.8em; padding: 8px 0; border-bottom: 1px solid var(--border); background: #fafafa;
+            flex-shrink: 0;
+        }
+
+        .month-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); 
+            auto-rows: minmax(140px, 1fr); 
+        }
+
+        .day-cell {
+            border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            background: white; padding: 2px; display: flex; flex-direction: column;
+            min-height: 140px;
+        }
+        
         .day-header { text-align: right; padding-right: 5px; font-size: 0.8em; font-weight: 600; color: #777; margin-bottom: 2px; }
         .day-cell.today .day-header { color: var(--primary); font-weight: 900; }
         .day-cell.other-month { background: #fdfdfd; opacity: 0.5; }
@@ -53,16 +72,20 @@
         .room-pill {
             font-size: 0.65em; padding: 3px; border-radius: 3px;
             cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            display: block; text-align: left; border: 1px solid transparent;
+            display: block; text-align: left;
+            border: 1px solid transparent;
         }
         .room-pill:hover { border-color: #999; filter: brightness(0.95); }
 
+        /* STATUS COLORS */
         .st-green { background: var(--status-free); color: var(--status-free-text); }
         .st-yellow { background: var(--status-part); color: var(--status-part-text); font-weight:700; }
         .st-red { background: var(--status-full); color: var(--status-full-text); font-weight:700; }
+
+        /* Abbr Logic */
         .pill-abbr { display: none; font-weight: 700; text-align: center; }
 
-        /* --- MOBILE --- */
+        /* --- MOBILE OVERRIDES --- */
         @media (max-width: 768px) {
             .month-grid { display: flex; flex-direction: column; } 
             .week-header { display: none; } 
@@ -71,14 +94,27 @@
             .day-body { flex-direction: row; gap: 5px; }
             .room-pill { font-size: 0.8em; padding: 5px; margin-bottom: 2px; }
             
-            .month-grid.mobile-overview { display: grid; grid-template-columns: repeat(7, 1fr); auto-rows: minmax(70px, auto); }
-            .month-grid.mobile-overview .day-cell { min-height: 70px; border: 1px solid #eee; padding: 1px; }
-            .month-grid.mobile-overview .day-header { font-size: 0.7em; text-align: center; background: transparent; margin: 0; }
-            .month-grid.mobile-overview .day-body { flex-direction: row; flex-wrap: wrap; gap: 1px; align-content: flex-start; justify-content: center; }
+            /* GRID OVERVIEW */
+            .month-grid.mobile-overview {
+                display: grid; grid-template-columns: repeat(7, 1fr); auto-rows: minmax(70px, auto);
+            }
+            .month-grid.mobile-overview .day-cell {
+                min-height: 70px; border: 1px solid #eee; padding: 1px;
+            }
+            .month-grid.mobile-overview .day-header {
+                font-size: 0.7em; text-align: center; background: transparent; margin: 0;
+            }
+            .month-grid.mobile-overview .day-body {
+                flex-direction: row; flex-wrap: wrap; gap: 1px; align-content: flex-start; justify-content: center;
+            }
             .month-grid.mobile-overview .day-col { display: contents; }
             .month-grid.mobile-overview .pill-full { display: none; }
             .month-grid.mobile-overview .pill-abbr { display: block; }
-            .month-grid.mobile-overview .room-pill { padding: 1px; margin: 0; width: 18px; font-size: 0.6em; text-align: center; border-radius: 2px; }
+            
+            /* Small squares for grid view */
+            .month-grid.mobile-overview .room-pill {
+                padding: 1px; margin: 0; width: 18px; font-size: 0.6em; text-align: center; border-radius: 2px;
+            }
 
             .top-bar { padding: 5px; gap: 5px; }
             button { padding: 6px 8px; font-size: 0.8em; }
@@ -98,6 +134,7 @@
 </head>
 <body>
 
+    <!-- AUTH -->
     <div id="auth-screen" style="height:100vh; display:flex; justify-content:center; align-items:center; background:var(--bg-subtle);">
         <div style="text-align:center; background:white; padding:40px; border-radius:12px; box-shadow:var(--shadow);">
             <h1>🏨 Hostel OS</h1>
@@ -105,6 +142,7 @@
         </div>
     </div>
 
+    <!-- APP -->
     <div id="app-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
         <div class="top-bar">
             <div class="header-row">
@@ -115,7 +153,10 @@
             </div>
             <div class="header-row">
                 <button onclick="goToToday()" id="txt-today">Danas</button>
-                <button onclick="syncData()">🔄 <span id="txt-sync">Sync</span></button>
+                <div style="display:flex; align-items:center;">
+                    <span id="sync-time" class="sync-label"></span>
+                    <button onclick="syncData()">🔄 <span id="txt-sync">Sync</span></button>
+                </div>
                 <button class="primary" onclick="openBookingModal()">+ <span id="txt-new">Nova rezervacija</span></button>
                 <button onclick="openRoomsModal()">⚙️</button>
                 <div style="display:flex; align-items:center; gap:5px; background:#eee; padding:2px; border-radius:4px;">
@@ -223,12 +264,18 @@
         function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
         function handleSignoutClick() { const t=gapi.client.getToken(); if(t) google.accounts.oauth2.revoke(t.access_token); gapi.client.setToken(''); localStorage.removeItem('g_token'); location.reload(); }
 
-        // --- DRIVE STRUCTURE (With Backups) ---
+        // --- DRIVE STRUCTURE ---
         async function initDriveStructure() {
+            // Find Root - sort by createdTime to grab the oldest (original) one
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
-            const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
-            rootFolderId = res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' })).result.id;
+            const res = await gapi.client.drive.files.list({ q: q, orderBy: 'createdTime', fields: 'files(id)' });
             
+            if (res.result.files.length > 0) {
+                rootFolderId = res.result.files[0].id; // Use existing
+            } else {
+                const f = await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' });
+                rootFolderId = f.result.id;
+            }
             await ensureFolderExists('customers', rootFolderId);
             receiptFolderId = await ensureFolderExists('receipts', rootFolderId);
             backupFolderId = await ensureFolderExists('backups', rootFolderId);
@@ -239,55 +286,60 @@
             return res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: n, mimeType: 'application/vnd.google-apps.folder', parents: [p] }, fields: 'id' })).result.id;
         }
 
-        // --- SYNC ---
+        // --- SYNC WITH SORTING ---
         async function syncData() {
-            // Strict exact match searching
+            const btn = document.getElementById('txt-sync');
+            const orig = btn.innerText; btn.innerText = "...";
+            
+            // Fetch Config (Most Recent)
             const cId = await findFileExact('config_v4.json');
             if (cId) { const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); if(r.result.rooms) configData.rooms = r.result.rooms; if(r.result.lang) configData.lang = r.result.lang; }
             applyLanguage(configData.lang);
             
+            // Fetch Bookings (Most Recent)
             const csvId = await findFileExact('bookings_v4.csv');
-            if (csvId) { const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); bookingsData = parseCSV(r.body); }
+            if (csvId) { 
+                const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); 
+                bookingsData = parseCSV(r.body); 
+            }
             
             await runPrivacyCleanup();
             renderMonth();
+            
+            const now = new Date();
+            document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+            btn.innerText = orig;
         }
 
-        // --- SAVE WITH PERMANENT BACKUP ---
         async function saveAllToDrive() {
-            // Config
+            const btn = document.getElementById('txt-sync'); btn.innerText = "Saving...";
+            
             const cId = await findFileExact('config_v4.json');
             if(cId) await updateFile(cId, JSON.stringify(configData), 'application/json'); 
             else await createFile('config_v4.json', JSON.stringify(configData), rootFolderId, 'application/json');
 
-            // Bookings & Backup Logic
             const csvContent = toCSV(bookingsData);
             const csvId = await findFileExact('bookings_v4.csv');
             
             if (csvId) {
-                // Check if we need to snapshot a backup (if file is older than 12h)
+                // Backup if >12h old
                 const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' });
-                const hoursSinceMod = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
-                
-                if (hoursSinceMod > 12) {
-                    // Create a timestamped backup in the 'backups' folder
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                    await gapi.client.drive.files.copy({
-                        fileId: csvId,
-                        resource: { 
-                            name: `backup_bookings_${timestamp}.csv`, 
-                            parents: [backupFolderId] 
-                        }
-                    });
+                const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
+                if (hours > 12) {
+                    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+                    await gapi.client.drive.files.copy({ fileId: csvId, resource: { name: `backup_${ts}.csv`, parents: [backupFolderId] } });
                 }
-                // Overwrite the main file (Single Source of Truth)
                 await updateFile(csvId, csvContent, 'text/csv');
             } else { 
                 await createFile('bookings_v4.csv', csvContent, rootFolderId, 'text/csv'); 
             }
+            
+            const now = new Date();
+            document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+            btn.innerText = i18n[configData.lang].sync;
         }
 
-        // --- APP LOGIC ---
+        // --- APP ---
         function goToToday() { currentViewDate = new Date(); renderMonth(); }
         function changeMonth(d) { currentViewDate.setMonth(currentViewDate.getMonth() + d); renderMonth(); }
         function toggleMobileView() { document.getElementById('month-grid').classList.toggle('mobile-overview'); }
@@ -318,17 +370,9 @@
                 if (isoDate === todayStr) dayDiv.classList.add('today');
                 
                 let html = `<div class="day-header">${d}</div><div class="day-body">`;
-                
-                html += `<div class="day-col">`;
-                configData.rooms.filter(r => (r.group||1) == 1).forEach(r => { html += buildRoomPill(r, isoDate); });
-                html += `</div>`;
-                
-                html += `<div class="day-col">`;
-                configData.rooms.filter(r => (r.group||1) == 2).forEach(r => { html += buildRoomPill(r, isoDate); });
-                html += `</div></div>`;
-                
-                dayDiv.innerHTML = html;
-                grid.appendChild(dayDiv);
+                html += `<div class="day-col">`; configData.rooms.filter(r => (r.group||1) == 1).forEach(r => { html += buildRoomPill(r, isoDate); }); html += `</div>`;
+                html += `<div class="day-col">`; configData.rooms.filter(r => (r.group||1) == 2).forEach(r => { html += buildRoomPill(r, isoDate); }); html += `</div></div>`;
+                dayDiv.innerHTML = html; grid.appendChild(dayDiv);
             }
             document.getElementById('b-room').innerHTML = configData.rooms.map(r => `<option value="${r.name}">${r.name} (Max ${r.cap})</option>`).join('');
         }
@@ -405,9 +449,11 @@
         async function runPrivacyCleanup() { const now = new Date(); let ch = false; for(let b of bookingsData) { if(!b.folderId) continue; const end = new Date(b.end); end.setHours(end.getHours()+24); if(now>end) { try{await gapi.client.drive.files.delete({fileId:b.folderId}); b.folderId=""; ch=true;}catch(e){} } } if(ch) await saveAllToDrive(); }
         function toCSV(d){const h=["id","room","guestName","platform","guests","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
         function parseCSV(t){const[h,...l]=t.trim().split("\n");if(!h)return[];const k=h.split("|");return l.map(r=>{const v=r.split("|");return k.reduce((a,c,i)=>({...a,[c]:v[i]}),{});});}
-        async function findFileExact(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`});return r.result.files[0]?.id||null;}
+        // FIND EXACT: Sorted by modifiedTime desc to get LATEST
+        async function findFileExact(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`, orderBy:'modifiedTime desc'});return r.result.files[0]?.id||null;}
         async function createFile(n,c,p,t){const f=new FormData();f.append('metadata',new Blob([JSON.stringify({name:n,parents:[p]})],{type:'application/json'}));f.append('file',new Blob([c],{type:t}));await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:f});}
         async function updateFile(i,c,t){await fetch(`https://www.googleapis.com/upload/drive/v3/files/${i}?uploadType=media`,{method:'PATCH',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token,'Content-Type':t},body:new Blob([c],{type:t})});}
+        async function copyFile(i,n){await gapi.client.drive.files.copy({fileId:i,resource:{name:n,parents:[backupFolderId]}});}
         async function uploadFile(f,p){const d=new FormData();d.append('metadata',new Blob([JSON.stringify({name:f.name,parents:[p]})],{type:'application/json'}));d.append('file',f);const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:d});const j=await r.json(); return j.id;}
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
