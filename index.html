@@ -22,7 +22,7 @@
         .top-bar { border-bottom: 1px solid var(--border); background: var(--bg-body); padding: 10px 15px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; z-index: 50; }
         .header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         
-        /* Brand is clickable on mobile for toggle */
+        /* Mobile Toggle Clickable Brand */
         .brand { font-weight: 800; font-size: 1.2em; display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; }
         .brand:active { opacity: 0.6; }
 
@@ -76,14 +76,17 @@
         }
         .room-pill:hover { border-color: #999; filter: brightness(0.95); }
 
-        /* STATUS COLORS */
+        /* Status Colors */
         .st-green { background: var(--status-free); color: var(--status-free-text); }
         .st-yellow { background: var(--status-part); color: var(--status-part-text); font-weight:700; }
         .st-red { background: var(--status-full); color: var(--status-full-text); font-weight:700; }
 
+        /* Abbreviations (Hidden by default) */
+        .pill-abbr { display: none; font-weight: 700; text-align: center; }
+
         /* --- MOBILE OVERRIDES --- */
         @media (max-width: 768px) {
-            /* Default Mobile: Vertical Stack (List View) */
+            /* 1. DEFAULT MOBILE: Vertical List View */
             .month-grid { display: flex; flex-direction: column; } 
             .week-header { display: none; } 
             .day-cell { min-height: auto; border-bottom: 4px solid #eee; padding: 5px; }
@@ -91,14 +94,14 @@
             .day-body { flex-direction: row; gap: 5px; }
             .room-pill { font-size: 0.8em; padding: 5px; margin-bottom: 2px; }
             
-            /* -- MOBILE OVERVIEW MODE (Toggled by JS) -- */
+            /* 2. MOBILE OVERVIEW MODE (Grid View) */
             .month-grid.mobile-overview {
                 display: grid;
                 grid-template-columns: repeat(7, 1fr);
-                auto-rows: minmax(60px, auto);
+                auto-rows: minmax(70px, auto);
             }
             .month-grid.mobile-overview .day-cell {
-                min-height: 60px;
+                min-height: 70px;
                 border: 1px solid #eee;
                 padding: 1px;
             }
@@ -116,20 +119,21 @@
                 justify-content: center;
             }
             .month-grid.mobile-overview .day-col {
-                display: contents; /* Flattens the columns */
+                display: contents; /* Flatten columns */
             }
+            
+            /* SWAP Full Name for Abbreviation */
+            .month-grid.mobile-overview .pill-full { display: none; }
+            .month-grid.mobile-overview .pill-abbr { display: block; }
+
             .month-grid.mobile-overview .room-pill {
-                font-size: 0; /* Hide text */
-                height: 6px;
-                width: 6px;
-                padding: 0;
+                padding: 1px;
                 margin: 0;
-                border-radius: 50%; /* Dots */
+                width: 18px; /* Fixed width for alignment */
+                font-size: 0.6em;
+                text-align: center;
+                border-radius: 2px;
             }
-            /* Make Red/Yellow dots distinct */
-            .month-grid.mobile-overview .st-green { background: #e0e0e0; } /* Grey out free rooms in dot view to reduce noise */
-            .month-grid.mobile-overview .st-yellow { background: #ff9800; }
-            .month-grid.mobile-overview .st-red { background: #f44336; }
 
             /* Header tweaks */
             .top-bar { padding: 5px; gap: 5px; }
@@ -162,7 +166,7 @@
     <div id="app-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
         <div class="top-bar">
             <div class="header-row">
-                <div class="brand" onclick="toggleMobileView()" title="Click to toggle view">📅 <span id="txt-brand">Kalendar</span></div>
+                <div class="brand" onclick="toggleMobileView()" title="Tap to toggle Grid View">📅 <span id="txt-brand">Kalendar</span></div>
                 <button onclick="exportToSheets()" class="success">📄 Export Sheets</button>
                 <button onclick="toggleLang()">HR/EN</button>
                 <button onclick="handleSignoutClick()" class="danger">🚪</button>
@@ -286,6 +290,7 @@
         let bookingsData = [];
         let currentViewDate = new Date();
         
+        // Updated Default Config with Apart in Group 2
         let configData = {
             lang: "hr",
             rooms: [
@@ -294,7 +299,8 @@
                 { name: "Hostel 3", cap: 8, group: 1 },
                 { name: "Hostel 4", cap: 10, group: 1 },
                 { name: "Hostel 5", cap: 4, group: 1 },
-                { name: "Apart.", cap: 4, group: 2 },  // Moved to Group 2
+                
+                { name: "Apart.", cap: 4, group: 2 }, // Fixed Group 2
                 { name: "Soba 1", cap: 4, group: 2 },
                 { name: "Soba 2", cap: 3, group: 2 },
                 { name: "Soba 3", cap: 4, group: 2 },
@@ -328,29 +334,26 @@
             return res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: n, mimeType: 'application/vnd.google-apps.folder', parents: [p] }, fields: 'id' })).result.id;
         }
 
-        // --- SYNC ---
+        // --- SYNC (Version 4 for Apart Fix) ---
         async function syncData() {
-            const cId = await findFile('config_v3.json');
+            const cId = await findFile('config_v4.json');
             if (cId) { const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); if(r.result.rooms) configData.rooms = r.result.rooms; if(r.result.lang) configData.lang = r.result.lang; }
             applyLanguage(configData.lang);
-            const csvId = await findFile('bookings_v3.csv');
+            const csvId = await findFile('bookings_v4.csv');
             if (csvId) { const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); bookingsData = parseCSV(r.body); }
             await runPrivacyCleanup();
             renderMonth();
         }
         async function saveAllToDrive() {
-            const cId = await findFile('config_v3.json'); const cContent = JSON.stringify(configData); if(cId) await updateFile(cId, cContent, 'application/json'); else await createFile('config_v3.json', cContent, rootFolderId, 'application/json');
-            const csvContent = toCSV(bookingsData); const csvId = await findFile('bookings_v3.csv');
-            if (csvId) { const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' }); const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5; if (hours > 12) await copyFile(csvId, 'bookings_v3_12h.csv'); await updateFile(csvId, csvContent, 'text/csv'); } else { await createFile('bookings_v3.csv', csvContent, rootFolderId, 'text/csv'); }
+            const cId = await findFile('config_v4.json'); const cContent = JSON.stringify(configData); if(cId) await updateFile(cId, cContent, 'application/json'); else await createFile('config_v4.json', cContent, rootFolderId, 'application/json');
+            const csvContent = toCSV(bookingsData); const csvId = await findFile('bookings_v4.csv');
+            if (csvId) { const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' }); const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5; if (hours > 12) await copyFile(csvId, 'bookings_v4_12h.csv'); await updateFile(csvId, csvContent, 'text/csv'); } else { await createFile('bookings_v4.csv', csvContent, rootFolderId, 'text/csv'); }
         }
 
         // --- CALENDAR ENGINE ---
         function goToToday() { currentViewDate = new Date(); renderMonth(); }
         function changeMonth(d) { currentViewDate.setMonth(currentViewDate.getMonth() + d); renderMonth(); }
-        
-        function toggleMobileView() {
-            document.getElementById('month-grid').classList.toggle('mobile-overview');
-        }
+        function toggleMobileView() { document.getElementById('month-grid').classList.toggle('mobile-overview'); }
 
         function renderMonth() {
             const grid = document.getElementById('month-grid'); grid.innerHTML = '';
@@ -364,11 +367,13 @@
             let startDay = firstDay.getDay() - 1; if (startDay === -1) startDay = 6;
             const todayStr = new Date().toISOString().split('T')[0];
 
+            // Padding
             for (let i = startDay; i > 0; i--) {
                 const d = document.createElement('div'); d.className = 'day-cell other-month';
                 d.innerHTML = `<div class="day-header">${new Date(year, month, 0).getDate() - i + 1}</div>`; grid.appendChild(d);
             }
 
+            // Days
             for (let d = 1; d <= lastDay.getDate(); d++) {
                 const dateObj = new Date(year, month, d);
                 const offset = dateObj.getTimezoneOffset() * 60000;
@@ -393,6 +398,14 @@
             document.getElementById('b-room').innerHTML = configData.rooms.map(r => `<option value="${r.name}">${r.name} (Max ${r.cap})</option>`).join('');
         }
 
+        // Helper to generate abbreviations
+        function getAbbr(name) {
+            if(name.startsWith("Hostel")) return "H" + name.split(" ")[1];
+            if(name.startsWith("Soba")) return "S" + name.split(" ")[1];
+            if(name.startsWith("Apart")) return "App";
+            return name.substring(0,2).toUpperCase();
+        }
+
         function buildRoomPill(room, dateIso) {
             const bs = bookingsData.filter(b => b.room === room.name && dateIso >= b.start && dateIso < b.end);
             let occ = 0;
@@ -402,10 +415,14 @@
             if (occ > 0 && occ < room.cap) cls = 'st-yellow';
             else if (occ >= room.cap) cls = 'st-red';
 
-            const label = `${room.name} (${occ}/${room.cap})`;
+            const labelFull = `${room.name} (${occ}/${room.cap})`;
+            const labelAbbr = getAbbr(room.name);
             const clickData = bs.length > 0 ? JSON.stringify(bs).replace(/"/g, '&quot;') : 'null';
             
-            return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)">${label}</div>`;
+            return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)">
+                <span class="pill-full">${labelFull}</span>
+                <span class="pill-abbr">${labelAbbr}</span>
+            </div>`;
         }
 
         function handlePillClick(date, room, existingBookings, e) {
