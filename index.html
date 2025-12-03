@@ -21,8 +21,6 @@
         /* --- HEADER --- */
         .top-bar { border-bottom: 1px solid var(--border); background: var(--bg-body); padding: 10px 15px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; z-index: 50; }
         .header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        
-        /* Mobile Toggle Clickable Brand */
         .brand { font-weight: 800; font-size: 1.2em; display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; }
         .brand:active { opacity: 0.6; }
 
@@ -40,25 +38,9 @@
 
         /* --- MONTH CALENDAR --- */
         .calendar-wrapper { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        
-        .week-header {
-            display: grid; grid-template-columns: repeat(7, 1fr);
-            text-align: center; font-weight: 700; color: var(--text-muted);
-            font-size: 0.8em; padding: 8px 0; border-bottom: 1px solid var(--border); background: #fafafa;
-            flex-shrink: 0;
-        }
-
-        .month-grid {
-            display: grid; grid-template-columns: repeat(7, 1fr); 
-            auto-rows: minmax(140px, 1fr); 
-        }
-
-        .day-cell {
-            border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
-            background: white; padding: 2px; display: flex; flex-direction: column;
-            min-height: 140px;
-        }
-        
+        .week-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 700; color: var(--text-muted); font-size: 0.8em; padding: 8px 0; border-bottom: 1px solid var(--border); background: #fafafa; flex-shrink: 0; }
+        .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); auto-rows: minmax(140px, 1fr); }
+        .day-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); background: white; padding: 2px; display: flex; flex-direction: column; min-height: 140px; }
         .day-header { text-align: right; padding-right: 5px; font-size: 0.8em; font-weight: 600; color: #777; margin-bottom: 2px; }
         .day-cell.today .day-header { color: var(--primary); font-weight: 900; }
         .day-cell.other-month { background: #fdfdfd; opacity: 0.5; }
@@ -71,22 +53,17 @@
         .room-pill {
             font-size: 0.65em; padding: 3px; border-radius: 3px;
             cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            display: block; text-align: left;
-            border: 1px solid transparent;
+            display: block; text-align: left; border: 1px solid transparent;
         }
         .room-pill:hover { border-color: #999; filter: brightness(0.95); }
 
-        /* Status Colors */
         .st-green { background: var(--status-free); color: var(--status-free-text); }
         .st-yellow { background: var(--status-part); color: var(--status-part-text); font-weight:700; }
         .st-red { background: var(--status-full); color: var(--status-full-text); font-weight:700; }
-
-        /* Abbreviations (Hidden by default) */
         .pill-abbr { display: none; font-weight: 700; text-align: center; }
 
-        /* --- MOBILE OVERRIDES --- */
+        /* --- MOBILE --- */
         @media (max-width: 768px) {
-            /* 1. DEFAULT MOBILE: Vertical List View */
             .month-grid { display: flex; flex-direction: column; } 
             .week-header { display: none; } 
             .day-cell { min-height: auto; border-bottom: 4px solid #eee; padding: 5px; }
@@ -94,48 +71,15 @@
             .day-body { flex-direction: row; gap: 5px; }
             .room-pill { font-size: 0.8em; padding: 5px; margin-bottom: 2px; }
             
-            /* 2. MOBILE OVERVIEW MODE (Grid View) */
-            .month-grid.mobile-overview {
-                display: grid;
-                grid-template-columns: repeat(7, 1fr);
-                auto-rows: minmax(70px, auto);
-            }
-            .month-grid.mobile-overview .day-cell {
-                min-height: 70px;
-                border: 1px solid #eee;
-                padding: 1px;
-            }
-            .month-grid.mobile-overview .day-header {
-                font-size: 0.7em;
-                text-align: center;
-                background: transparent;
-                margin: 0;
-            }
-            .month-grid.mobile-overview .day-body {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 1px;
-                align-content: flex-start;
-                justify-content: center;
-            }
-            .month-grid.mobile-overview .day-col {
-                display: contents; /* Flatten columns */
-            }
-            
-            /* SWAP Full Name for Abbreviation */
+            .month-grid.mobile-overview { display: grid; grid-template-columns: repeat(7, 1fr); auto-rows: minmax(70px, auto); }
+            .month-grid.mobile-overview .day-cell { min-height: 70px; border: 1px solid #eee; padding: 1px; }
+            .month-grid.mobile-overview .day-header { font-size: 0.7em; text-align: center; background: transparent; margin: 0; }
+            .month-grid.mobile-overview .day-body { flex-direction: row; flex-wrap: wrap; gap: 1px; align-content: flex-start; justify-content: center; }
+            .month-grid.mobile-overview .day-col { display: contents; }
             .month-grid.mobile-overview .pill-full { display: none; }
             .month-grid.mobile-overview .pill-abbr { display: block; }
+            .month-grid.mobile-overview .room-pill { padding: 1px; margin: 0; width: 18px; font-size: 0.6em; text-align: center; border-radius: 2px; }
 
-            .month-grid.mobile-overview .room-pill {
-                padding: 1px;
-                margin: 0;
-                width: 18px; /* Fixed width for alignment */
-                font-size: 0.6em;
-                text-align: center;
-                border-radius: 2px;
-            }
-
-            /* Header tweaks */
             .top-bar { padding: 5px; gap: 5px; }
             button { padding: 6px 8px; font-size: 0.8em; }
             .header-row { gap: 5px; flex-wrap: wrap; }
@@ -154,7 +98,6 @@
 </head>
 <body>
 
-    <!-- AUTH -->
     <div id="auth-screen" style="height:100vh; display:flex; justify-content:center; align-items:center; background:var(--bg-subtle);">
         <div style="text-align:center; background:white; padding:40px; border-radius:12px; box-shadow:var(--shadow);">
             <h1>🏨 Hostel OS</h1>
@@ -162,7 +105,6 @@
         </div>
     </div>
 
-    <!-- APP -->
     <div id="app-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
         <div class="top-bar">
             <div class="header-row">
@@ -199,61 +141,26 @@
             </div>
             <form id="booking-form">
                 <input type="hidden" id="booking-id">
-                
-                <div class="form-group">
-                    <label id="lbl-name">Guest Name</label>
-                    <input type="text" id="b-name" required>
-                </div>
-
+                <div class="form-group"><label id="lbl-name">Guest Name</label><input type="text" id="b-name" required></div>
                 <div style="display:flex; gap:10px;">
-                    <div class="form-group" style="flex:2">
-                        <label id="lbl-room">Room (Capacity)</label>
-                        <select id="b-room" required></select>
-                    </div>
-                    <div class="form-group" style="flex:1">
-                        <label>Platform</label>
-                        <select id="b-platform">
-                            <option value="Uživo">Uživo</option>
-                            <option value="Booking">Booking.com</option>
-                            <option value="Airbnb">Airbnb</option>
-                        </select>
-                    </div>
+                    <div class="form-group" style="flex:2"><label id="lbl-room">Room (Capacity)</label><select id="b-room" required></select></div>
+                    <div class="form-group" style="flex:1"><label>Platform</label><select id="b-platform"><option value="Uživo">Uživo</option><option value="Booking">Booking.com</option><option value="Airbnb">Airbnb</option></select></div>
                 </div>
-
                 <div class="form-group" style="background:#f0f7ff; padding:10px; border-radius:6px; margin-bottom:10px;">
-                    <label>Guests / Broj Osoba</label>
-                    <input type="number" id="b-guests" min="1" value="1" required>
+                    <label>Guests / Broj Osoba</label><input type="number" id="b-guests" min="1" value="1" required>
                 </div>
-
                 <div style="display:flex; gap:10px;">
-                    <div class="form-group" style="flex:1">
-                        <label id="lbl-in">Check-in</label>
-                        <input type="date" id="b-start" required>
-                    </div>
-                    <div class="form-group" style="flex:1">
-                        <label id="lbl-out">Check-out</label>
-                        <input type="date" id="b-end" required>
-                    </div>
+                    <div class="form-group" style="flex:1"><label id="lbl-in">Check-in</label><input type="date" id="b-start" required></div>
+                    <div class="form-group" style="flex:1"><label id="lbl-out">Check-out</label><input type="date" id="b-end" required></div>
                 </div>
-
                 <div class="receipt-box">
                     <label style="color:#2e7d32;">🧾 Receipt (Permanent)</label>
                     <input type="text" id="b-receipt-num" placeholder="Receipt Number" style="margin-bottom:5px;">
                     <input type="file" id="b-receipt-photo" accept="image/*">
                     <a id="lnk-receipt" href="#" target="_blank" class="receipt-link hidden">👁️ View Receipt</a>
                 </div>
-
-                <div class="form-group">
-                    <label id="lbl-photos">Evidentiary Photos (24h)</label>
-                    <input type="file" id="b-photos" multiple accept="image/*">
-                </div>
-
-                <div class="form-group">
-                    <label id="lbl-contact">Contact</label>
-                    <input type="tel" id="b-phone">
-                    <input type="email" id="b-email">
-                </div>
-
+                <div class="form-group"><label id="lbl-photos">Evidentiary Photos (24h)</label><input type="file" id="b-photos" multiple accept="image/*"></div>
+                <div class="form-group"><label id="lbl-contact">Contact</label><input type="tel" id="b-phone"><input type="email" id="b-email"></div>
                 <div style="display:flex; gap:10px;">
                     <button type="submit" class="primary" style="flex:1;" id="btn-save">Save</button>
                     <button type="button" id="btn-delete" class="danger hidden" onclick="deleteBooking()">🗑</button>
@@ -279,18 +186,16 @@
         </div>
     </div>
 
-    <!-- SCRIPT -->
     <script>
         const CLIENT_ID = '37488392612-d0sbbhledoekidrovu6bt5q1m8emja6d.apps.googleusercontent.com'; 
         const API_KEY = 'AIzaSyD8532gK5ngGyKry-7TACkEf86G5I-r4pQ';     
         const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-        let tokenClient, rootFolderId, receiptFolderId;
+        let tokenClient, rootFolderId, receiptFolderId, backupFolderId;
         let bookingsData = [];
         let currentViewDate = new Date();
         
-        // Updated Default Config with Apart in Group 2
         let configData = {
             lang: "hr",
             rooms: [
@@ -299,8 +204,7 @@
                 { name: "Hostel 3", cap: 8, group: 1 },
                 { name: "Hostel 4", cap: 10, group: 1 },
                 { name: "Hostel 5", cap: 4, group: 1 },
-                
-                { name: "Apart.", cap: 4, group: 2 }, // Fixed Group 2
+                { name: "Apart.", cap: 4, group: 2 },
                 { name: "Soba 1", cap: 4, group: 2 },
                 { name: "Soba 2", cap: 3, group: 2 },
                 { name: "Soba 3", cap: 4, group: 2 },
@@ -314,19 +218,20 @@
             hr: { brand: "Kalendar", today: "Danas", sync: "Sync", new: "Nova rezervacija", name: "Gost", in: "Prijava", out: "Odjava", save: "Spremi", days: ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"] }
         };
 
-        // --- AUTH ---
         function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); if(localStorage.getItem('g_token')){ gapi.client.setToken(JSON.parse(localStorage.getItem('g_token'))); try { document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden'); await initDriveStructure(); await syncData(); } catch(e) { localStorage.removeItem('g_token'); location.reload(); } } }); }
         function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error) throw resp; localStorage.setItem('g_token', JSON.stringify(gapi.client.getToken())); document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden'); await initDriveStructure(); await syncData(); }, }); }
         function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
         function handleSignoutClick() { const t=gapi.client.getToken(); if(t) google.accounts.oauth2.revoke(t.access_token); gapi.client.setToken(''); localStorage.removeItem('g_token'); location.reload(); }
 
-        // --- DRIVE ---
+        // --- DRIVE STRUCTURE (With Backups) ---
         async function initDriveStructure() {
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
             const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
             rootFolderId = res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' })).result.id;
+            
             await ensureFolderExists('customers', rootFolderId);
             receiptFolderId = await ensureFolderExists('receipts', rootFolderId);
+            backupFolderId = await ensureFolderExists('backups', rootFolderId);
         }
         async function ensureFolderExists(n, p) {
             const q = `mimeType='application/vnd.google-apps.folder' and name='${n}' and '${p}' in parents and trashed=false`;
@@ -334,23 +239,55 @@
             return res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: n, mimeType: 'application/vnd.google-apps.folder', parents: [p] }, fields: 'id' })).result.id;
         }
 
-        // --- SYNC (Version 4 for Apart Fix) ---
+        // --- SYNC ---
         async function syncData() {
-            const cId = await findFile('config_v4.json');
+            // Strict exact match searching
+            const cId = await findFileExact('config_v4.json');
             if (cId) { const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); if(r.result.rooms) configData.rooms = r.result.rooms; if(r.result.lang) configData.lang = r.result.lang; }
             applyLanguage(configData.lang);
-            const csvId = await findFile('bookings_v4.csv');
+            
+            const csvId = await findFileExact('bookings_v4.csv');
             if (csvId) { const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); bookingsData = parseCSV(r.body); }
+            
             await runPrivacyCleanup();
             renderMonth();
         }
+
+        // --- SAVE WITH PERMANENT BACKUP ---
         async function saveAllToDrive() {
-            const cId = await findFile('config_v4.json'); const cContent = JSON.stringify(configData); if(cId) await updateFile(cId, cContent, 'application/json'); else await createFile('config_v4.json', cContent, rootFolderId, 'application/json');
-            const csvContent = toCSV(bookingsData); const csvId = await findFile('bookings_v4.csv');
-            if (csvId) { const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' }); const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5; if (hours > 12) await copyFile(csvId, 'bookings_v4_12h.csv'); await updateFile(csvId, csvContent, 'text/csv'); } else { await createFile('bookings_v4.csv', csvContent, rootFolderId, 'text/csv'); }
+            // Config
+            const cId = await findFileExact('config_v4.json');
+            if(cId) await updateFile(cId, JSON.stringify(configData), 'application/json'); 
+            else await createFile('config_v4.json', JSON.stringify(configData), rootFolderId, 'application/json');
+
+            // Bookings & Backup Logic
+            const csvContent = toCSV(bookingsData);
+            const csvId = await findFileExact('bookings_v4.csv');
+            
+            if (csvId) {
+                // Check if we need to snapshot a backup (if file is older than 12h)
+                const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' });
+                const hoursSinceMod = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
+                
+                if (hoursSinceMod > 12) {
+                    // Create a timestamped backup in the 'backups' folder
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    await gapi.client.drive.files.copy({
+                        fileId: csvId,
+                        resource: { 
+                            name: `backup_bookings_${timestamp}.csv`, 
+                            parents: [backupFolderId] 
+                        }
+                    });
+                }
+                // Overwrite the main file (Single Source of Truth)
+                await updateFile(csvId, csvContent, 'text/csv');
+            } else { 
+                await createFile('bookings_v4.csv', csvContent, rootFolderId, 'text/csv'); 
+            }
         }
 
-        // --- CALENDAR ENGINE ---
+        // --- APP LOGIC ---
         function goToToday() { currentViewDate = new Date(); renderMonth(); }
         function changeMonth(d) { currentViewDate.setMonth(currentViewDate.getMonth() + d); renderMonth(); }
         function toggleMobileView() { document.getElementById('month-grid').classList.toggle('mobile-overview'); }
@@ -367,13 +304,11 @@
             let startDay = firstDay.getDay() - 1; if (startDay === -1) startDay = 6;
             const todayStr = new Date().toISOString().split('T')[0];
 
-            // Padding
             for (let i = startDay; i > 0; i--) {
                 const d = document.createElement('div'); d.className = 'day-cell other-month';
                 d.innerHTML = `<div class="day-header">${new Date(year, month, 0).getDate() - i + 1}</div>`; grid.appendChild(d);
             }
 
-            // Days
             for (let d = 1; d <= lastDay.getDate(); d++) {
                 const dateObj = new Date(year, month, d);
                 const offset = dateObj.getTimezoneOffset() * 60000;
@@ -390,7 +325,7 @@
                 
                 html += `<div class="day-col">`;
                 configData.rooms.filter(r => (r.group||1) == 2).forEach(r => { html += buildRoomPill(r, isoDate); });
-                html += `</div></div>`; // End body
+                html += `</div></div>`;
                 
                 dayDiv.innerHTML = html;
                 grid.appendChild(dayDiv);
@@ -398,7 +333,6 @@
             document.getElementById('b-room').innerHTML = configData.rooms.map(r => `<option value="${r.name}">${r.name} (Max ${r.cap})</option>`).join('');
         }
 
-        // Helper to generate abbreviations
         function getAbbr(name) {
             if(name.startsWith("Hostel")) return "H" + name.split(" ")[1];
             if(name.startsWith("Soba")) return "S" + name.split(" ")[1];
@@ -408,21 +342,11 @@
 
         function buildRoomPill(room, dateIso) {
             const bs = bookingsData.filter(b => b.room === room.name && dateIso >= b.start && dateIso < b.end);
-            let occ = 0;
-            bs.forEach(b => occ += parseInt(b.guests||1));
-
-            let cls = 'st-green'; 
-            if (occ > 0 && occ < room.cap) cls = 'st-yellow';
-            else if (occ >= room.cap) cls = 'st-red';
-
-            const labelFull = `${room.name} (${occ}/${room.cap})`;
-            const labelAbbr = getAbbr(room.name);
+            let occ = 0; bs.forEach(b => occ += parseInt(b.guests||1));
+            let cls = 'st-green'; if (occ > 0 && occ < room.cap) cls = 'st-yellow'; else if (occ >= room.cap) cls = 'st-red';
             const clickData = bs.length > 0 ? JSON.stringify(bs).replace(/"/g, '&quot;') : 'null';
-            
             return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)">
-                <span class="pill-full">${labelFull}</span>
-                <span class="pill-abbr">${labelAbbr}</span>
-            </div>`;
+                <span class="pill-full">${room.name} (${occ}/${room.cap})</span><span class="pill-abbr">${getAbbr(room.name)}</span></div>`;
         }
 
         function handlePillClick(date, room, existingBookings, e) {
@@ -431,12 +355,9 @@
             else openBookingModal(null, date, room);
         }
 
-        // --- BOOKING LOGIC ---
         function openBookingModal(b = null, dateHint = null, roomHint = null) {
-            const m = document.getElementById('booking-modal'), f = document.getElementById('booking-form');
+            const m = document.getElementById('booking-modal'), f = document.getElementById('booking-form'), lnk = document.getElementById('lnk-receipt');
             m.style.display = 'flex';
-            const lnk = document.getElementById('lnk-receipt');
-            
             if (b) {
                 document.getElementById('booking-id').value = b.id;
                 document.getElementById('b-name').value = b.guestName;
@@ -451,96 +372,42 @@
                 if(b.receiptLinkId) { lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`; lnk.classList.remove('hidden'); } else { lnk.classList.add('hidden'); }
                 document.getElementById('btn-delete').classList.remove('hidden');
             } else {
-                f.reset();
-                document.getElementById('booking-id').value = "";
-                document.getElementById('b-guests').value = 1;
+                f.reset(); document.getElementById('booking-id').value = ""; document.getElementById('b-guests').value = 1;
                 if(roomHint) document.getElementById('b-room').value = roomHint;
-                if(dateHint) {
-                    document.getElementById('b-start').value = dateHint;
-                    const n = new Date(dateHint); n.setDate(n.getDate()+1);
-                    document.getElementById('b-end').value = n.toISOString().split('T')[0];
-                }
-                lnk.classList.add('hidden');
-                document.getElementById('btn-delete').classList.add('hidden');
+                if(dateHint) { document.getElementById('b-start').value = dateHint; const n = new Date(dateHint); n.setDate(n.getDate()+1); document.getElementById('b-end').value = n.toISOString().split('T')[0]; }
+                lnk.classList.add('hidden'); document.getElementById('btn-delete').classList.add('hidden');
             }
         }
         function closeModal(id) { document.getElementById(id).style.display='none'; }
 
         document.getElementById('booking-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-save'); btn.disabled=true; btn.innerText="...";
-            
-            const id = document.getElementById('booking-id').value || crypto.randomUUID();
-            const isNew = !document.getElementById('booking-id').value;
-            const photos = document.getElementById('b-photos').files;
-            const receipt = document.getElementById('b-receipt-photo').files[0];
-
+            e.preventDefault(); const btn = document.getElementById('btn-save'); btn.disabled=true; btn.innerText="...";
+            const id = document.getElementById('booking-id').value || crypto.randomUUID(); const isNew = !document.getElementById('booking-id').value;
+            const photos = document.getElementById('b-photos').files; const receipt = document.getElementById('b-receipt-photo').files[0];
             let folderId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.folderId||"");
-            if(photos.length > 0) {
-                const root = await ensureFolderExists('customers', rootFolderId);
-                folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root);
-                for(let f of photos) await uploadFile(f, folderId);
-            }
+            if(photos.length > 0) { const root = await ensureFolderExists('customers', rootFolderId); folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root); for(let f of photos) await uploadFile(f, folderId); }
             let receiptId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.receiptLinkId||"");
             if(receipt) receiptId = await uploadFile(receipt, receiptFolderId);
-
-            const b = { 
-                id, folderId, receiptLinkId: receiptId,
-                receiptNumber: document.getElementById('b-receipt-num').value,
-                room: document.getElementById('b-room').value, 
-                guestName: document.getElementById('b-name').value, 
-                platform: document.getElementById('b-platform').value,
-                guests: document.getElementById('b-guests').value,
-                start: document.getElementById('b-start').value, 
-                end: document.getElementById('b-end').value, 
-                phone: document.getElementById('b-phone').value, 
-                email: document.getElementById('b-email').value 
-            };
+            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, start: document.getElementById('b-start').value, end: document.getElementById('b-end').value, phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value };
             if(isNew) bookingsData.push(b); else bookingsData[bookingsData.findIndex(x=>x.id===id)] = b;
-            await saveAllToDrive(); renderMonth(); closeModal('booking-modal');
-            btn.disabled=false; btn.innerText="Save";
+            await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); btn.disabled=false; btn.innerText="Save";
         };
         async function deleteBooking() { if(confirm("Delete?")){ bookingsData=bookingsData.filter(b=>b.id!==document.getElementById('booking-id').value); await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); } }
 
-        // --- ROOMS CONFIG ---
-        function openRoomsModal() {
-            const l = document.getElementById('rooms-list'); l.innerHTML = '';
-            configData.rooms.forEach((r, i) => {
-                const d = document.createElement('div'); d.className = 'room-item';
-                d.innerHTML = `<span>${r.name} (${r.cap}) G:${r.group}</span> <button class="danger" onclick="removeRoom(${i})">&times;</button>`;
-                l.appendChild(d);
-            });
-            document.getElementById('rooms-modal').style.display = 'flex';
-        }
-        function addRoom() { 
-            const n=document.getElementById('new-room-name').value; 
-            const c=document.getElementById('new-room-cap').value; 
-            const g = document.querySelector('input[name="r-grp"]:checked').value;
-            if(n&&c){ configData.rooms.push({name:n, cap:parseInt(c), group:parseInt(g)}); openRoomsModal(); renderMonth(); saveAllToDrive(); } 
-        }
+        function openRoomsModal() { const l = document.getElementById('rooms-list'); l.innerHTML = ''; configData.rooms.forEach((r, i) => { const d = document.createElement('div'); d.className = 'room-item'; d.innerHTML = `<span>${r.name} (${r.cap}) G:${r.group}</span> <button class="danger" onclick="removeRoom(${i})">&times;</button>`; l.appendChild(d); }); document.getElementById('rooms-modal').style.display = 'flex'; }
+        function addRoom() { const n=document.getElementById('new-room-name').value; const c=document.getElementById('new-room-cap').value; const g = document.querySelector('input[name="r-grp"]:checked').value; if(n&&c){ configData.rooms.push({name:n, cap:parseInt(c), group:parseInt(g)}); openRoomsModal(); renderMonth(); saveAllToDrive(); } }
         function removeRoom(i) { if(confirm('Delete?')){ configData.rooms.splice(i,1); openRoomsModal(); renderMonth(); saveAllToDrive(); } }
 
-        // --- EXPORT ---
-        async function exportToSheets() {
-            const btn = document.querySelector('button[onclick="exportToSheets()"]'); const orig = btn.innerText; btn.innerText = "...";
-            let csv = 'In,Out,Room,Guest,Guests,Platform,Receipt#,Link\n';
-            bookingsData.forEach(b => { const l = b.receiptLinkId ? `https://drive.google.com/file/d/${b.receiptLinkId}/view` : ""; const r = [b.start, b.end, b.room, b.guestName, b.guests, b.platform, b.receiptNumber, l]; csv += r.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",") + "\n"; });
-            const meta = { name: `Hostel_Export_${new Date().toISOString()}`, mimeType: 'application/vnd.google-apps.spreadsheet', parents: [rootFolderId] };
-            const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' })); form.append('file', new Blob([csv], { type: 'text/csv' }));
-            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }, body: form });
-            const j = await res.json(); btn.innerText = orig; if(j.id) window.open(`https://docs.google.com/spreadsheets/d/${j.id}`, '_blank');
-        }
+        async function exportToSheets() { const btn = document.querySelector('button[onclick="exportToSheets()"]'); const orig = btn.innerText; btn.innerText = "..."; let csv = 'In,Out,Room,Guest,Guests,Platform,Receipt#,Link\n'; bookingsData.forEach(b => { const l = b.receiptLinkId ? `https://drive.google.com/file/d/${b.receiptLinkId}/view` : ""; const r = [b.start, b.end, b.room, b.guestName, b.guests, b.platform, b.receiptNumber, l]; csv += r.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",") + "\n"; }); const meta = { name: `Hostel_Export_${new Date().toISOString()}`, mimeType: 'application/vnd.google-apps.spreadsheet', parents: [rootFolderId] }; const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' })); form.append('file', new Blob([csv], { type: 'text/csv' })); const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }, body: form }); const j = await res.json(); btn.innerText = orig; if(j.id) window.open(`https://docs.google.com/spreadsheets/d/${j.id}`, '_blank'); }
 
-        // --- HELPERS ---
         function applyLanguage(l){ configData.lang = l; document.getElementById('txt-brand').innerText = i18n[l].brand; document.getElementById('txt-today').innerText = i18n[l].today; document.getElementById('txt-new').innerText = i18n[l].new; document.getElementById('week-header').innerHTML = i18n[l].days.map(d => `<div>${d}</div>`).join(''); renderMonth(); }
         function toggleLang(){ applyLanguage(configData.lang==='en'?'hr':'en'); saveAllToDrive(); }
         async function runPrivacyCleanup() { const now = new Date(); let ch = false; for(let b of bookingsData) { if(!b.folderId) continue; const end = new Date(b.end); end.setHours(end.getHours()+24); if(now>end) { try{await gapi.client.drive.files.delete({fileId:b.folderId}); b.folderId=""; ch=true;}catch(e){} } } if(ch) await saveAllToDrive(); }
         function toCSV(d){const h=["id","room","guestName","platform","guests","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
         function parseCSV(t){const[h,...l]=t.trim().split("\n");if(!h)return[];const k=h.split("|");return l.map(r=>{const v=r.split("|");return k.reduce((a,c,i)=>({...a,[c]:v[i]}),{});});}
-        async function findFile(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`});return r.result.files[0]?.id||null;}
+        async function findFileExact(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`});return r.result.files[0]?.id||null;}
         async function createFile(n,c,p,t){const f=new FormData();f.append('metadata',new Blob([JSON.stringify({name:n,parents:[p]})],{type:'application/json'}));f.append('file',new Blob([c],{type:t}));await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:f});}
         async function updateFile(i,c,t){await fetch(`https://www.googleapis.com/upload/drive/v3/files/${i}?uploadType=media`,{method:'PATCH',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token,'Content-Type':t},body:new Blob([c],{type:t})});}
-        async function copyFile(i,n){const o=await findFile(n);if(o)await gapi.client.drive.files.delete({fileId:o});await gapi.client.drive.files.copy({fileId:i,resource:{name:n,parents:[rootFolderId]}});}
         async function uploadFile(f,p){const d=new FormData();d.append('metadata',new Blob([JSON.stringify({name:f.name,parents:[p]})],{type:'application/json'}));d.append('file',f);const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:d});const j=await r.json(); return j.id;}
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
