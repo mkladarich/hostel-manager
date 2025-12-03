@@ -9,13 +9,13 @@
         :root {
             --bg-body: #FFFFFF; --bg-subtle: #F7F7F5; 
             --text-main: #37352F; --text-muted: #787774; --border: #E1E1E0;
-            --primary: #0081C9; --danger: #d93025;
+            --primary: #0081C9; --danger: #d93025; --success: #2e7d32;
             --radius: 6px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* --- HEADER (2 Rows) --- */
+        /* --- HEADER --- */
         .header-container {
             background: var(--bg-body);
             border-bottom: 1px solid var(--border);
@@ -27,13 +27,7 @@
             z-index: 50;
         }
 
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         .brand { font-weight: 800; font-size: 1.3em; margin: 0; display: flex; align-items: center; gap: 5px; }
         .month-title { font-weight: 600; font-size: 1.1em; text-transform: capitalize; }
 
@@ -41,45 +35,32 @@
         button { 
             border-radius: var(--radius); border: 1px solid var(--border); background: white; 
             cursor: pointer; transition: 0.1s; white-space: nowrap; 
-            padding: 12px 16px; /* Big touch targets */
-            font-size: 0.95em; font-weight: 600;
+            padding: 12px 16px; font-size: 0.95em; font-weight: 600;
             display: flex; align-items: center; justify-content: center;
         }
         button:active { background: var(--bg-subtle); transform: scale(0.98); }
         button.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
         button.danger { color: var(--danger); border-color: #ffcccb; background: #fff5f5; }
+        button.success { color: var(--success); border-color: #c8e6c9; background: #f1f8e9; }
         button.icon-btn { border: none; background: transparent; padding: 5px; font-size: 1.4em; }
 
         /* --- MONTH GRID --- */
         .calendar-wrapper { flex: 1; overflow-y: auto; padding: 10px; -webkit-overflow-scrolling: touch; }
         
         .week-header {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.8em;
-            padding: 5px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 5px;
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            text-align: center; font-weight: 600; color: var(--text-muted);
+            font-size: 0.8em; padding: 5px 0; border-bottom: 1px solid var(--border); margin-bottom: 5px;
         }
 
         .month-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr); /* 7 Days */
-            gap: 4px;
-            auto-rows: minmax(100px, auto); /* Minimum height for days */
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+            auto-rows: minmax(100px, auto);
         }
 
         .day-cell {
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: white;
-            padding: 4px;
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
+            border: 1px solid var(--border); border-radius: var(--radius);
+            background: white; padding: 4px; display: flex; flex-direction: column; gap: 3px;
             min-height: 100px;
         }
 
@@ -87,32 +68,12 @@
         .day-cell.other-month { background: #fafafa; color: #ccc; }
         .day-number { font-size: 0.9em; font-weight: 600; margin-bottom: 2px; }
 
-        /* BOOKING CHIPS */
         .booking-chip {
-            font-size: 0.75em;
-            padding: 4px 6px;
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 0.75em; padding: 4px 6px; border-radius: 4px; color: white;
+            cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         .booking-chip:hover { filter: brightness(1.1); }
-
-        /* MOBILE ADJUSTMENTS */
-        @media (max-width: 768px) {
-            .header-container { padding: 8px; gap: 8px; }
-            button { padding: 10px 12px; font-size: 0.85em; flex: 1; }
-            .brand { font-size: 1.1em; }
-            .header-row { gap: 8px; }
-            /* Make grid vertically stacked list if needed, or just tight grid */
-            .day-number { font-size: 0.8em; }
-            .booking-chip { font-size: 0.7em; padding: 3px 4px; }
-            .month-grid { gap: 2px; }
-            .day-cell { min-height: 80px; }
-        }
 
         /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 100; justify-content: center; align-items: center; display: none; }
@@ -120,11 +81,25 @@
         .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
         label { font-size: 0.75em; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; box-sizing: border-box; font-size: 16px; }
-        .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
-
-        /* --- AUTH --- */
-        #auth-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: var(--bg-subtle); padding: 20px; }
         
+        .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
+        
+        /* Receipt Box */
+        .receipt-box { border: 1px solid #c8e6c9; background: #f1f8e9; padding: 10px; border-radius: var(--radius); margin-bottom: 15px; }
+        .receipt-link { display: block; margin-top: 5px; font-size: 0.85em; color: var(--success); text-decoration: none; font-weight: 600; }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .header-container { padding: 8px; gap: 8px; }
+            button { padding: 10px 12px; font-size: 0.85em; flex: 1; }
+            .brand { font-size: 1.1em; }
+            .header-row { gap: 8px; }
+            .booking-chip { font-size: 0.7em; padding: 3px 4px; }
+            .month-grid { gap: 2px; }
+            .day-cell { min-height: 80px; }
+        }
+
+        #auth-screen { height: 100vh; display: flex; justify-content: center; align-items: center; background: var(--bg-subtle); padding: 20px; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -134,8 +109,7 @@
     <div id="auth-screen">
         <div style="text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: var(--shadow); width: 100%; max-width: 350px;">
             <h1>🏨 Hostel OS</h1>
-            <p id="txt-login-desc" style="color: var(--text-muted); margin-bottom: 20px;">Manager & Evidence</p>
-            <button class="primary" onclick="handleAuthClick()" style="width: 100%; padding: 15px; font-size: 1em;">
+            <button class="primary" onclick="handleAuthClick()" style="width: 100%; padding: 15px; font-size: 1em; margin-top:20px;">
                 <span id="txt-btn-login">Login with Google</span>
             </button>
         </div>
@@ -143,40 +117,29 @@
 
     <!-- APP SCREEN -->
     <div id="app-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
-        
-        <!-- HEADER ROW 1 -->
         <div class="header-container">
             <div class="header-row">
                 <div class="brand">📅 <span id="txt-brand">Kalendar</span></div>
-                <button onclick="downloadExcel()">📊 Excel</button>
-                <button onclick="toggleLang()" style="font-weight: bold;">HR/EN</button>
+                <button onclick="exportToSheets()" class="success">📄 Export Sheets</button>
+                <button onclick="toggleLang()">HR/EN</button>
                 <button onclick="handleSignoutClick()" class="danger">🚪</button>
             </div>
-            
-            <!-- HEADER ROW 2 -->
             <div class="header-row">
                 <button onclick="goToToday()" id="txt-today">Danas</button>
                 <button onclick="syncData()">🔄 <span id="txt-sync">Sync</span></button>
-                <button class="primary" onclick="openBookingModal()">+ <span id="txt-new">New</span></button>
+                <button class="primary" onclick="openBookingModal()">+ <span id="txt-new">Nova rezervacija</span></button>
                 <button onclick="openRoomsModal()">⚙️</button>
             </div>
-
-            <!-- Month Navigation -->
             <div class="header-row" style="justify-content: center; margin-top: 5px;">
                 <button class="icon-btn" onclick="changeMonth(-1)">◀</button>
-                <span class="month-title" id="month-display">December 2025</span>
+                <span class="month-title" id="month-display">...</span>
                 <button class="icon-btn" onclick="changeMonth(1)">▶</button>
             </div>
         </div>
 
-        <!-- MONTH GRID -->
         <div class="calendar-wrapper">
-            <div class="week-header" id="week-header">
-                <!-- Mon Tue Wed... injected via JS -->
-            </div>
-            <div class="month-grid" id="month-grid">
-                <!-- Days injected via JS -->
-            </div>
+            <div class="week-header" id="week-header"></div>
+            <div class="month-grid" id="month-grid"></div>
         </div>
     </div>
 
@@ -189,10 +152,12 @@
             </div>
             <form id="booking-form">
                 <input type="hidden" id="booking-id">
+                
                 <div class="form-group">
                     <label id="lbl-name">Guest Name</label>
                     <input type="text" id="b-name" required>
                 </div>
+                
                 <div style="display:flex; gap:10px;">
                     <div class="form-group" style="flex:1">
                         <label id="lbl-room">Room</label>
@@ -207,6 +172,7 @@
                         </select>
                     </div>
                 </div>
+
                 <div style="display:flex; gap:10px;">
                     <div class="form-group" style="flex:1">
                         <label id="lbl-in">Check-in</label>
@@ -217,14 +183,25 @@
                         <input type="date" id="b-end" required>
                     </div>
                 </div>
+
+                <!-- RECEIPT SECTION (PERMANENT) -->
+                <div class="receipt-box">
+                    <label id="lbl-receipt" style="color:#2e7d32;">🧾 Receipt / Račun (Permanent)</label>
+                    <input type="text" id="b-receipt-num" placeholder="Receipt Number / Broj Računa" style="margin-bottom:5px;">
+                    <input type="file" id="b-receipt-photo" accept="image/*">
+                    <a id="lnk-receipt" href="#" target="_blank" class="receipt-link hidden">👁️ View Saved Receipt</a>
+                </div>
+
+                <!-- EVIDENTIARY PHOTOS (24h) -->
+                <div class="form-group">
+                    <label id="lbl-photos">Evidentiary Photos (24h Delete)</label>
+                    <input type="file" id="b-photos" multiple accept="image/*">
+                </div>
+
                 <div class="form-group">
                     <label id="lbl-contact">Contact</label>
                     <input type="tel" id="b-phone" placeholder="+385 91...">
                     <input type="email" id="b-email" placeholder="email@...">
-                </div>
-                <div class="form-group">
-                    <label id="lbl-photos">Photos</label>
-                    <input type="file" id="b-photos" multiple accept="image/*">
                 </div>
                 
                 <div id="contact-buttons" class="hidden" style="display:flex; gap:10px; margin-bottom: 15px; padding-top:10px; border-top:1px dashed #eee;">
@@ -264,31 +241,24 @@
 
         let tokenClient;
         let rootFolderId = null;
+        let receiptFolderId = null;
         let bookingsData = [];
         let configData = { rooms: ["Soba 1", "Soba 2", "App A"], lang: "hr" };
-        
-        // Calendar State
         let currentViewDate = new Date();
 
         const i18n = {
-            en: { brand: "Calendar", today: "Today", new: "Entry", sync: "Sync", modalNew: "New Booking", modalEdit: "Edit Booking", name: "Guest Name", room: "Room", in: "Check-in", out: "Check-out", contact: "Contact Info", photos: "Photos", save: "Save", manage: "Manage Rooms", loginDesc: "Manager & Evidence", btnLogin: "Login with Google", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] },
-            hr: { brand: "Kalendar", today: "Danas", new: "Unos", sync: "Sync", modalNew: "Nova Rezervacija", modalEdit: "Uredi Rezervaciju", name: "Ime Gosta", room: "Soba", in: "Prijava", out: "Odjava", contact: "Kontakt", photos: "Slike (Dokaz)", save: "Spremi", manage: "Uredi Sobe", loginDesc: "Sustav za upravljanje i evidenciju", btnLogin: "Prijava putem Googla", days: ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"] }
+            en: { brand: "Calendar", today: "Today", new: "Nova rezervacija", sync: "Sync", modalNew: "New Booking", modalEdit: "Edit Booking", name: "Guest Name", room: "Room", in: "Check-in", out: "Check-out", contact: "Contact Info", photos: "Photos (24h)", receipt: "Receipt (Permanent)", save: "Save", manage: "Manage Rooms", loginDesc: "Manager & Evidence", btnLogin: "Login with Google", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] },
+            hr: { brand: "Kalendar", today: "Danas", new: "Nova rezervacija", sync: "Sync", modalNew: "Nova Rezervacija", modalEdit: "Uredi Rezervaciju", name: "Ime Gosta", room: "Soba", in: "Prijava", out: "Odjava", contact: "Kontakt", photos: "Slike (24h)", receipt: "Račun (Trajno)", save: "Spremi", manage: "Uredi Sobe", loginDesc: "Sustav za upravljanje i evidenciju", btnLogin: "Prijava putem Googla", days: ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"] }
         };
 
-        const platformColors = {
-            'Booking': '#003580', // Booking Blue
-            'Airbnb': '#FF5A5F',  // Airbnb Red
-            'Uživo': '#2E7D32',   // Green
-            'Direct': '#2E7D32'
-        };
+        const platformColors = { 'Booking': '#003580', 'Airbnb': '#FF5A5F', 'Uživo': '#2E7D32', 'Direct': '#2E7D32' };
 
         // --- AUTH & INIT ---
         function gapiLoaded() {
             gapi.load('client', async () => {
                 await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
-                const savedToken = localStorage.getItem('g_token');
-                if (savedToken) {
-                    gapi.client.setToken(JSON.parse(savedToken));
+                if(localStorage.getItem('g_token')){
+                    gapi.client.setToken(JSON.parse(localStorage.getItem('g_token')));
                     try { 
                         document.getElementById('auth-screen').classList.add('hidden'); 
                         document.getElementById('app-screen').classList.remove('hidden'); 
@@ -312,7 +282,6 @@
                 },
             });
         }
-
         function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
         function handleSignoutClick() { const t=gapi.client.getToken(); if(t) google.accounts.oauth2.revoke(t.access_token); gapi.client.setToken(''); localStorage.removeItem('g_token'); location.reload(); }
 
@@ -321,6 +290,7 @@
             const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
             rootFolderId = res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' })).result.id;
             await ensureFolderExists('customers', rootFolderId);
+            receiptFolderId = await ensureFolderExists('receipts', rootFolderId);
         }
         async function ensureFolderExists(n, p) {
             const q = `mimeType='application/vnd.google-apps.folder' and name='${n}' and '${p}' in parents and trashed=false`;
@@ -376,100 +346,65 @@
             document.getElementById('lbl-out').innerText = t.out;
             document.getElementById('lbl-contact').innerText = t.contact;
             document.getElementById('lbl-photos').innerText = t.photos;
+            document.getElementById('lbl-receipt').innerText = t.receipt;
             document.getElementById('btn-save').innerText = t.save;
             document.getElementById('lbl-manage-rooms').innerText = t.manage;
-            document.getElementById('txt-login-desc').innerText = t.loginDesc;
             document.getElementById('txt-btn-login').innerText = t.btnLogin;
             
-            // Render Week Headers
             const wh = document.getElementById('week-header');
             wh.innerHTML = t.days.map(d => `<div>${d}</div>`).join('');
-            
             renderMonth();
         }
-
         function toggleLang() { applyLanguage(configData.lang==='en'?'hr':'en'); saveAllToDrive(); }
 
-        // --- CALENDAR RENDER ENGINE ---
+        // --- CALENDAR ENGINE ---
         function goToToday() { currentViewDate = new Date(); renderMonth(); }
         function changeMonth(d) { currentViewDate.setMonth(currentViewDate.getMonth() + d); renderMonth(); }
 
         function renderMonth() {
-            const grid = document.getElementById('month-grid');
-            grid.innerHTML = '';
-            
+            const grid = document.getElementById('month-grid'); grid.innerHTML = '';
             const year = currentViewDate.getFullYear();
             const month = currentViewDate.getMonth();
-            
-            // Update Title
-            const monthNamesHr = ["Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj", "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac"];
-            const monthNamesEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            const mName = configData.lang === 'hr' ? monthNamesHr[month] : monthNamesEn[month];
-            document.getElementById('month-display').innerText = `${mName} ${year}`;
+            const mNames = configData.lang === 'hr' ? ["Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj", "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac"] : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('month-display').innerText = `${mNames[month]} ${year}`;
 
-            // Logic to fill grid
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            
-            // Adjust so Monday is 0, Sunday is 6 (Standard JS is Sun=0)
-            let startDay = firstDay.getDay() - 1; 
-            if (startDay === -1) startDay = 6; // Sunday fix
-
+            let startDay = firstDay.getDay() - 1; if (startDay === -1) startDay = 6;
             const todayStr = new Date().toISOString().split('T')[0];
 
-            // PADDING DAYS (Previous Month)
-            const prevMonthLastDate = new Date(year, month, 0).getDate();
             for (let i = startDay; i > 0; i--) {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'day-cell other-month';
-                dayDiv.innerHTML = `<div class="day-number">${prevMonthLastDate - i + 1}</div>`;
-                grid.appendChild(dayDiv);
+                const d = document.createElement('div'); d.className = 'day-cell other-month';
+                d.innerHTML = `<div class="day-number">${new Date(year, month, 0).getDate() - i + 1}</div>`; grid.appendChild(d);
             }
 
-            // CURRENT MONTH DAYS
             for (let d = 1; d <= lastDay.getDate(); d++) {
                 const dateObj = new Date(year, month, d);
-                // Correct ISO String accounting for timezone offset
                 const offset = dateObj.getTimezoneOffset() * 60000;
                 const isoDate = new Date(dateObj.getTime() - offset).toISOString().split('T')[0];
-
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'day-cell';
-                if (isoDate === todayStr) dayDiv.classList.add('today');
                 
-                dayDiv.innerHTML = `<div class="day-number">${d}</div>`;
+                const dDiv = document.createElement('div'); dDiv.className = 'day-cell';
+                if (isoDate === todayStr) dDiv.classList.add('today');
+                dDiv.innerHTML = `<div class="day-number">${d}</div>`;
 
-                // FIND BOOKINGS for this day
-                // Booking appears if isoDate >= start AND isoDate < end
-                const dayBookings = bookingsData.filter(b => isoDate >= b.start && isoDate < b.end);
-                
-                dayBookings.forEach(b => {
-                    const chip = document.createElement('div');
-                    chip.className = 'booking-chip';
-                    const bg = platformColors[b.platform] || '#0081C9';
-                    chip.style.backgroundColor = bg;
-                    chip.innerText = `[${b.room}] ${b.guestName}`;
-                    chip.onclick = (e) => { e.stopPropagation(); openBookingModal(b); };
-                    dayDiv.appendChild(chip);
+                bookingsData.filter(b => isoDate >= b.start && isoDate < b.end).forEach(b => {
+                    const c = document.createElement('div'); c.className = 'booking-chip';
+                    c.style.backgroundColor = platformColors[b.platform] || '#0081C9';
+                    c.innerText = `[${b.room}] ${b.guestName}`;
+                    c.onclick = (e) => { e.stopPropagation(); openBookingModal(b); };
+                    dDiv.appendChild(c);
                 });
-
-                // Click empty space to add new booking
-                dayDiv.onclick = () => {
-                     openBookingModal(null, isoDate);
-                };
-
-                grid.appendChild(dayDiv);
+                dDiv.onclick = () => openBookingModal(null, isoDate);
+                grid.appendChild(dDiv);
             }
-            
             document.getElementById('b-room').innerHTML = configData.rooms.map(r=>`<option value="${r}">${r}</option>`).join('');
         }
 
         // --- BOOKING LOGIC ---
         function openBookingModal(b = null, dateHint = null) {
-            const m = document.getElementById('booking-modal');
-            const f = document.getElementById('booking-form');
+            const m = document.getElementById('booking-modal'), f = document.getElementById('booking-form'), t = i18n[configData.lang];
             m.style.display = 'flex';
-            const t = i18n[configData.lang];
+            const lnk = document.getElementById('lnk-receipt');
             
             if (b) {
                 document.getElementById('modal-title').innerText = t.modalEdit;
@@ -481,20 +416,27 @@
                 document.getElementById('b-end').value = b.end;
                 document.getElementById('b-phone').value = b.phone;
                 document.getElementById('b-email').value = b.email;
+                document.getElementById('b-receipt-num').value = b.receiptNumber || "";
+                
+                // Receipt Link
+                if(b.receiptLinkId) {
+                    lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`;
+                    lnk.classList.remove('hidden');
+                } else { lnk.classList.add('hidden'); }
+
                 document.getElementById('btn-delete').classList.remove('hidden');
                 document.getElementById('contact-buttons').classList.remove('hidden');
                 document.getElementById('btn-call').href = `tel:${b.phone}`;
                 document.getElementById('btn-email').href = `mailto:${b.email}`;
             } else {
                 document.getElementById('modal-title').innerText = t.modalNew;
-                f.reset();
-                document.getElementById('booking-id').value = "";
+                f.reset(); document.getElementById('booking-id').value = "";
+                document.getElementById('b-receipt-num').value = "";
+                lnk.classList.add('hidden');
                 document.getElementById('btn-delete').classList.add('hidden');
                 document.getElementById('contact-buttons').classList.add('hidden');
-                // Pre-fill date if clicked on calendar
                 if(dateHint) {
                     document.getElementById('b-start').value = dateHint;
-                    // Default next day checkout
                     const n = new Date(dateHint); n.setDate(n.getDate()+1);
                     document.getElementById('b-end').value = n.toISOString().split('T')[0];
                 }
@@ -504,19 +446,40 @@
 
         document.getElementById('booking-form').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-save'); btn.disabled=true; btn.innerText="...";
+            const btn = document.getElementById('btn-save'); btn.disabled=true; btn.innerText="Processing...";
+            
             const id = document.getElementById('booking-id').value || crypto.randomUUID();
             const isNew = !document.getElementById('booking-id').value;
-            const files = document.getElementById('b-photos').files;
-            let fId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.folderId||"");
-
-            if(files.length > 0) {
+            
+            const photos = document.getElementById('b-photos').files;
+            const receiptPhoto = document.getElementById('b-receipt-photo').files[0];
+            
+            // 1. Evidence Photos (24h)
+            let folderId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.folderId||"");
+            if(photos.length > 0) {
                 const root = await ensureFolderExists('customers', rootFolderId);
-                fId = await ensureFolderExists(Math.random().toString(36).substring(7), root);
-                for(let f of files) await uploadFile(f, fId);
+                folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root);
+                for(let f of photos) await uploadFile(f, folderId);
             }
 
-            const b = { id, folderId: fId, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, start: document.getElementById('b-start').value, end: document.getElementById('b-end').value, phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value };
+            // 2. Receipt Photo (Permanent)
+            let receiptId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.receiptLinkId||"");
+            if(receiptPhoto) {
+                receiptId = await uploadFile(receiptPhoto, receiptFolderId);
+            }
+
+            const b = { 
+                id, folderId, receiptLinkId: receiptId,
+                receiptNumber: document.getElementById('b-receipt-num').value,
+                room: document.getElementById('b-room').value, 
+                guestName: document.getElementById('b-name').value, 
+                platform: document.getElementById('b-platform').value, 
+                start: document.getElementById('b-start').value, 
+                end: document.getElementById('b-end').value, 
+                phone: document.getElementById('b-phone').value, 
+                email: document.getElementById('b-email').value 
+            };
+
             if(isNew) bookingsData.push(b); else bookingsData[bookingsData.findIndex(x=>x.id===id)] = b;
             
             await saveAllToDrive(); renderMonth(); closeModal('booking-modal');
@@ -524,30 +487,32 @@
         };
         async function deleteBooking() { if(confirm("Delete?")){ bookingsData=bookingsData.filter(b=>b.id!==document.getElementById('booking-id').value); await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); } }
 
-        // --- ROOMS MGMT ---
-        function openRoomsModal() {
-            const l = document.getElementById('rooms-list'); l.innerHTML = '';
-            configData.rooms.forEach((r, i) => {
-                const d = document.createElement('div'); d.className = 'room-item';
-                d.innerHTML = `<span>${r}</span> <button class="danger" onclick="removeRoom(${i})">&times;</button>`;
-                l.appendChild(d);
-            });
-            document.getElementById('rooms-modal').style.display = 'flex';
-        }
-        function addRoom() { const v = document.getElementById('new-room-name').value; if(v){ configData.rooms.push(v); document.getElementById('new-room-name').value=''; openRoomsModal(); renderMonth(); saveAllToDrive(); } }
-        function removeRoom(i) { if(confirm('Delete?')){ configData.rooms.splice(i,1); openRoomsModal(); renderMonth(); saveAllToDrive(); } }
+        // --- GOOGLE SHEETS EXPORT ---
+        async function exportToSheets() {
+            const btn = document.querySelector('button[onclick="exportToSheets()"]');
+            const orig = btn.innerText; btn.innerText = "Creating...";
 
-        // --- EXPORT ---
-        function downloadExcel() {
-            let csv = '\ufeffGuest,Room,Platform,Check-In,Check-Out,Phone,Email\n';
+            let csv = 'Check-In,Check-Out,Room,Guest,Platform,Receipt Number,Receipt Link,Phone,Email\n';
             bookingsData.forEach(b => {
-                const row = [b.guestName, b.room, b.platform, b.start, b.end, b.phone, b.email];
+                const link = b.receiptLinkId ? `https://drive.google.com/file/d/${b.receiptLinkId}/view` : "";
+                const row = [b.start, b.end, b.room, b.guestName, b.platform, b.receiptNumber, link, b.phone, b.email];
                 csv += row.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",") + "\n";
             });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-            link.download = `Hostel_Bookings_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+
+            // Upload as Google Sheet
+            const fileMeta = { name: `Hostel_Export_${new Date().toISOString().split('T')[0]}`, mimeType: 'application/vnd.google-apps.spreadsheet', parents: [rootFolderId] };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(fileMeta)], { type: 'application/json' }));
+            form.append('file', new Blob([csv], { type: 'text/csv' }));
+
+            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST', headers: { 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }, body: form
+            });
+            const json = await res.json();
+            
+            btn.innerText = orig;
+            if(json.id) window.open(`https://docs.google.com/spreadsheets/d/${json.id}`, '_blank');
+            else alert("Error creating Sheet");
         }
 
         async function runPrivacyCleanup() {
@@ -560,14 +525,26 @@
             if(ch) await saveAllToDrive();
         }
 
-        // --- HELPERS & DRIVE API ---
-        function toCSV(d){const h=["id","room","guestName","platform","start","end","phone","email","folderId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
+        // --- HELPERS ---
+        function openRoomsModal() {
+            const l = document.getElementById('rooms-list'); l.innerHTML = '';
+            configData.rooms.forEach((r, i) => {
+                const d = document.createElement('div'); d.className = 'room-item';
+                d.innerHTML = `<span>${r}</span> <button class="danger" onclick="removeRoom(${i})">&times;</button>`;
+                l.appendChild(d);
+            });
+            document.getElementById('rooms-modal').style.display = 'flex';
+        }
+        function addRoom() { const v = document.getElementById('new-room-name').value; if(v){ configData.rooms.push(v); document.getElementById('new-room-name').value=''; openRoomsModal(); renderMonth(); saveAllToDrive(); } }
+        function removeRoom(i) { if(confirm('Delete?')){ configData.rooms.splice(i,1); openRoomsModal(); renderMonth(); saveAllToDrive(); } }
+
+        function toCSV(d){const h=["id","room","guestName","platform","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
         function parseCSV(t){const[h,...l]=t.trim().split("\n");if(!h)return[];const k=h.split("|");return l.map(r=>{const v=r.split("|");return k.reduce((a,c,i)=>({...a,[c]:v[i]}),{});});}
         async function findFile(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`});return r.result.files[0]?.id||null;}
         async function createFile(n,c,p,t){const f=new FormData();f.append('metadata',new Blob([JSON.stringify({name:n,parents:[p]})],{type:'application/json'}));f.append('file',new Blob([c],{type:t}));await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:f});}
         async function updateFile(i,c,t){await fetch(`https://www.googleapis.com/upload/drive/v3/files/${i}?uploadType=media`,{method:'PATCH',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token,'Content-Type':t},body:new Blob([c],{type:t})});}
         async function copyFile(i,n){const o=await findFile(n);if(o)await gapi.client.drive.files.delete({fileId:o});await gapi.client.drive.files.copy({fileId:i,resource:{name:n,parents:[rootFolderId]}});}
-        async function uploadFile(f,p){const d=new FormData();d.append('metadata',new Blob([JSON.stringify({name:f.name,parents:[p]})],{type:'application/json'}));d.append('file',f);await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:d});}
+        async function uploadFile(f,p){const d=new FormData();d.append('metadata',new Blob([JSON.stringify({name:f.name,parents:[p]})],{type:'application/json'}));d.append('file',f);const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:d});const j=await r.json(); return j.id;}
 
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
