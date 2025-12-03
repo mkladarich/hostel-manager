@@ -34,19 +34,50 @@
 
         /* --- CALENDAR --- */
         .calendar-wrapper { flex: 1; overflow: auto; position: relative; scroll-behavior: smooth; }
-        table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1200px; }
-        th, td { border-bottom: 1px solid var(--border); border-right: 1px dashed var(--border); height: 50px; position: relative; box-sizing: border-box; }
+        
+        table { 
+            border-collapse: separate; 
+            border-spacing: 0; 
+            width: 100%; 
+            /* Forced min-width to ensure cells are wide (Big table feel) */
+            min-width: 1800px; 
+        }
+
+        th, td { 
+            border-bottom: 1px solid var(--border); 
+            border-right: 1px dashed var(--border); 
+            height: 70px; /* Taller rows for apartments */
+            position: relative; 
+            box-sizing: border-box; 
+        }
         
         /* Sticky Headers */
-        thead th { position: sticky; top: 0; background: var(--bg-body); z-index: 20; padding: 10px; font-size: 0.85em; border-bottom: 2px solid var(--border); }
-        .room-col { position: sticky; left: 0; background: var(--bg-subtle); z-index: 30; width: 160px; min-width: 160px; padding-left: 15px; font-weight: 600; border-right: 2px solid var(--border); text-align: left; }
+        thead th { 
+            position: sticky; top: 0; background: var(--bg-body); z-index: 20; 
+            padding: 10px; font-size: 0.9em; border-bottom: 2px solid var(--border); 
+        }
+        
+        /* Sticky Room Column */
+        .room-col { 
+            position: sticky; left: 0; background: var(--bg-subtle); z-index: 30; 
+            width: 180px; min-width: 180px; padding-left: 15px; font-weight: 600; 
+            border-right: 2px solid var(--border); text-align: left; 
+            display: flex; align-items: center; /* Vertically center text */
+        }
+        
         .today-col { background-color: #e8f0fe !important; }
 
         /* Booking Pills */
-        .booking-block { position: absolute; top: 6px; bottom: 6px; left: 0; right: 0; background: var(--primary-soft); color: var(--primary); font-size: 0.75em; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .booking-block:hover { filter: brightness(0.95); }
-        .b-start { border-top-left-radius: var(--radius); border-bottom-left-radius: var(--radius); left: 4px; }
-        .b-end { border-top-right-radius: var(--radius); border-bottom-right-radius: var(--radius); right: 4px; }
+        .booking-block { 
+            position: absolute; top: 8px; bottom: 8px; left: 0; right: 0; 
+            background: var(--primary-soft); color: var(--primary); 
+            font-size: 0.85em; font-weight: 500;
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; z-index: 5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+        }
+        .booking-block:hover { filter: brightness(0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .b-start { border-top-left-radius: var(--radius); border-bottom-left-radius: var(--radius); left: 6px; }
+        .b-end { border-top-right-radius: var(--radius); border-bottom-right-radius: var(--radius); right: 6px; }
         
         /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(3px); z-index: 100; justify-content: center; align-items: center; display: none; }
@@ -55,7 +86,6 @@
         label { font-size: 0.8em; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
         input, select { padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; box-sizing: border-box; }
         
-        /* Rooms List in Modal */
         .room-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; align-items: center; }
         .room-item:last-child { border: none; }
 
@@ -186,7 +216,8 @@
         let tokenClient;
         let rootFolderId = null;
         let bookingsData = [];
-        let configData = { rooms: ["Room 1", "Room 2"], lang: "en" }; // Default
+        // DEFAULT TO CROATIAN (hr)
+        let configData = { rooms: ["Soba 1", "Soba 2", "App A"], lang: "hr" };
         
         // --- TRANSLATIONS ---
         const i18n = {
@@ -210,20 +241,16 @@
         function gapiLoaded() {
             gapi.load('client', async () => {
                 await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
-                // Check if we have a saved token
                 const savedToken = localStorage.getItem('g_token');
                 if (savedToken) {
                     gapi.client.setToken(JSON.parse(savedToken));
-                    // Try to load app immediately
                     try {
                         document.getElementById('auth-screen').classList.add('hidden');
                         document.getElementById('app-screen').classList.remove('hidden');
                         await initDriveStructure();
                         await syncData();
                     } catch (e) {
-                        console.log("Token expired or invalid", e);
-                        localStorage.removeItem('g_token'); // Clear bad token
-                        location.reload(); // Reset to login screen
+                        localStorage.removeItem('g_token'); location.reload();
                     }
                 }
             });
@@ -234,10 +261,8 @@
                 client_id: CLIENT_ID, scope: SCOPES,
                 callback: async (resp) => {
                     if (resp.error) throw resp;
-                    // Save token for persistent feel (expires in 1h, but we skip login screen)
                     const token = gapi.client.getToken();
                     localStorage.setItem('g_token', JSON.stringify(token));
-                    
                     document.getElementById('auth-screen').classList.add('hidden');
                     document.getElementById('app-screen').classList.remove('hidden');
                     await initDriveStructure();
@@ -246,9 +271,7 @@
             });
         }
 
-        function handleAuthClick() {
-            tokenClient.requestAccessToken({ prompt: 'consent' });
-        }
+        function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
 
         function handleSignoutClick() {
             const token = gapi.client.getToken();
@@ -260,7 +283,6 @@
 
         // --- DRIVE & DATA SYNC ---
         async function initDriveStructure() {
-            // Find/Create Root
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
             const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
             if (res.result.files.length > 0) rootFolderId = res.result.files[0].id;
@@ -280,15 +302,18 @@
         async function syncData() {
             document.getElementById('txt-sync').innerText = "...";
             
-            // 1. Load CONFIG (Rooms & Language)
+            // 1. Load CONFIG
             const configFileId = await findFile('config.json');
             if (configFileId) {
                 const res = await gapi.client.drive.files.get({ fileId: configFileId, alt: 'media' });
-                configData = res.result; // Use JSON directly
+                // Merge config, don't overwrite blindly if keys missing
+                const cloudConfig = res.result;
+                if(cloudConfig.rooms) configData.rooms = cloudConfig.rooms;
+                if(cloudConfig.lang) configData.lang = cloudConfig.lang;
             }
             
             // Apply Settings
-            applyLanguage(configData.lang || 'en');
+            applyLanguage(configData.lang);
             
             // 2. Load BOOKINGS
             const csvFileId = await findFile('bookings.csv');
@@ -297,9 +322,7 @@
                 bookingsData = parseCSV(res.body);
             }
             
-            // 3. Cleanup Privacy
             await runPrivacyCleanup();
-            
             renderCalendar();
             document.getElementById('txt-sync').innerText = i18n[configData.lang].sync;
         }
@@ -308,8 +331,8 @@
             document.getElementById('txt-sync').innerText = "Saving...";
             
             // Save Config
-            const configContent = JSON.stringify(configData);
             const configFileId = await findFile('config.json');
+            const configContent = JSON.stringify(configData);
             if(configFileId) await updateFile(configFileId, configContent, 'application/json');
             else await createFile('config.json', configContent, rootFolderId, 'application/json');
 
@@ -317,7 +340,6 @@
             const csvContent = toCSV(bookingsData);
             const csvFileId = await findFile('bookings.csv');
             if (csvFileId) {
-                // Backups logic
                 const meta = await gapi.client.drive.files.get({ fileId: csvFileId, fields: 'modifiedTime' });
                 const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
                 if (hours > 12) await copyFile(csvFileId, 'bookings_12h.csv');
@@ -329,11 +351,11 @@
             document.getElementById('txt-sync').innerText = i18n[configData.lang].sync;
         }
 
-        // --- APP LOGIC (Rooms & UI) ---
+        // --- APP LOGIC ---
         function applyLanguage(lang) {
             configData.lang = lang;
             const t = i18n[lang];
-            // Update Text Elements
+            // Update Text
             document.getElementById('txt-brand').innerText = t.brand;
             document.getElementById('txt-today').innerText = t.today;
             document.getElementById('txt-rooms').innerText = t.rooms;
@@ -349,11 +371,17 @@
             document.getElementById('lbl-manage-rooms').innerText = t.manage;
             document.getElementById('txt-login-desc').innerText = t.loginDesc;
             document.getElementById('txt-btn-login').innerText = t.btnLogin;
+            
+            // Re-render calendar to update day names
+            if(document.getElementById('calendar').innerHTML !== "") {
+                renderCalendar();
+            }
         }
 
         function toggleLang() {
-            applyLanguage(configData.lang === 'en' ? 'hr' : 'en');
-            saveAllToDrive(); // Save preference
+            const newLang = configData.lang === 'en' ? 'hr' : 'en';
+            applyLanguage(newLang);
+            saveAllToDrive(); 
         }
 
         function openRoomsModal() {
@@ -373,18 +401,14 @@
             if(val) {
                 configData.rooms.push(val);
                 document.getElementById('new-room-name').value = '';
-                openRoomsModal(); // Refresh list
-                renderCalendar();
-                saveAllToDrive();
+                openRoomsModal(); renderCalendar(); saveAllToDrive();
             }
         }
 
         function removeRoom(idx) {
             if(confirm('Remove this room?')) {
                 configData.rooms.splice(idx, 1);
-                openRoomsModal();
-                renderCalendar();
-                saveAllToDrive();
+                openRoomsModal(); renderCalendar(); saveAllToDrive();
             }
         }
 
@@ -396,9 +420,9 @@
             const today = new Date();
             today.setHours(0,0,0,0);
             
-            // Date Range: -7 days to +60 days
+            // VIEW SCALE: -3 days to +18 days (3 Weeks)
             const dates = [];
-            for(let i=-7; i<60; i++) {
+            for(let i=-3; i<18; i++) {
                 const d = new Date(today);
                 d.setDate(today.getDate() + i);
                 dates.push(d);
@@ -411,19 +435,20 @@
                 const isToday = d.getTime() === today.getTime();
                 const cls = isToday ? 'today-col' : '';
                 const style = (d.getDay()==0||d.getDay()==6) ? 'background:#f9f9f9;' : '';
-                thead += `<th class="${cls}" style="${style}" data-date="${iso}">${d.getDate()}<br><span style="font-weight:400; font-size:0.8em">${d.toLocaleDateString(configData.lang, {weekday:'short'})}</span></th>`;
+                // USE LOCALE STRING FOR CORRECT LANGUAGE
+                const dayName = d.toLocaleDateString(configData.lang, {weekday:'short'});
+                thead += `<th class="${cls}" style="${style}" data-date="${iso}">${d.getDate()}<br><span style="font-weight:400; font-size:0.8em">${dayName}</span></th>`;
             });
             thead += '</tr></thead><tbody>';
 
             // BODY
             configData.rooms.forEach(room => {
-                thead += `<tr><td class="room-col">${room}</td>`;
+                thead += `<tr><td class="room-col"><div>${room}</div></td>`;
                 dates.forEach(d => {
                     const iso = d.toISOString().split('T')[0];
                     const isToday = d.getTime() === today.getTime();
                     const cls = isToday ? 'today-col' : '';
                     
-                    // Find Booking
                     const b = bookingsData.find(x => x.room === room && iso >= x.start && iso < x.end);
                     
                     let cellContent = '';
@@ -440,10 +465,7 @@
             thead += '</tbody>';
             table.innerHTML = thead;
 
-            // Update Form Dropdown
             document.getElementById('b-room').innerHTML = configData.rooms.map(r => `<option value="${r}">${r}</option>`).join('');
-            
-            // Scroll to Today (if first load)
             setTimeout(goToToday, 100);
         }
 
@@ -461,8 +483,6 @@
 
             const id = document.getElementById('booking-id').value || crypto.randomUUID();
             const isNew = !document.getElementById('booking-id').value;
-
-            // Upload Logic
             const files = document.getElementById('b-photos').files;
             let folderId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.folderId || "");
 
@@ -541,7 +561,7 @@
                 const end = new Date(b.end); end.setHours(end.getHours()+24);
                 if(now > end) {
                     try { await gapi.client.drive.files.delete({fileId: b.folderId}); b.folderId = ""; changed=true; } 
-                    catch(e){console.log('Cleanup error',e)}
+                    catch(e){}
                 }
             }
             if(changed) await saveAllToDrive();
