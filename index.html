@@ -10,82 +10,92 @@
             --bg-body: #FFFFFF; --bg-subtle: #F7F7F5; 
             --text-main: #37352F; --text-muted: #787774; --border: #E1E1E0;
             --primary: #0081C9; 
-            --status-free: #4caf50; /* Green */
-            --status-part: #ff9800; /* Yellow */
-            --status-full: #f44336; /* Red */
-            --radius: 6px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-            
-            /* DIMENSIONS */
-            --col-width: 100px; 
-            --room-col-width: 180px;
-            --row-height: 60px;
-        }
-
-        /* MOBILE OVERRIDES */
-        @media (max-width: 768px) {
-            :root {
-                --col-width: 60px; 
-                --room-col-width: 110px; 
-                --row-height: 55px;
-            }
-            .brand span#txt-brand { display: none; } 
-            button { padding: 8px 10px !important; font-size: 0.85em !important; } 
-            .top-bar { padding: 8px !important; height: auto !important; flex-wrap: wrap; }
-            .room-name-text { font-size: 0.8em; }
-            .cap-indicator { font-size: 0.7em; }
+            --status-free: #e8f5e9; --status-free-text: #2e7d32; /* Green */
+            --status-part: #fff3e0; --status-part-text: #ef6c00; /* Yellow */
+            --status-full: #ffebee; --status-full-text: #c62828; /* Red */
+            --radius: 4px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         /* --- HEADER --- */
-        .top-bar { border-bottom: 1px solid var(--border); background: var(--bg-body); padding: 10px 20px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
+        .top-bar { border-bottom: 1px solid var(--border); background: var(--bg-body); padding: 10px 15px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; z-index: 50; }
         .header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .brand { font-weight: 800; font-size: 1.3em; display: flex; align-items: center; gap: 5px; }
+        .brand { font-weight: 800; font-size: 1.2em; display: flex; align-items: center; gap: 5px; }
 
         button { 
             border-radius: var(--radius); border: 1px solid var(--border); background: white; 
             cursor: pointer; transition: 0.1s; white-space: nowrap; 
-            padding: 10px 14px; font-size: 0.95em; font-weight: 600;
+            padding: 8px 12px; font-size: 0.9em; font-weight: 600;
             display: flex; align-items: center; justify-content: center;
         }
         button:active { background: var(--bg-subtle); transform: scale(0.98); }
         button.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
         button.success { color: #2e7d32; border-color: #c8e6c9; background: #f1f8e9; }
         button.danger { color: #d93025; border-color: #ffcccb; background: #fff5f5; }
+        button.icon-btn { border: none; background: transparent; padding: 0 10px; font-size: 1.2em; }
 
-        /* --- TIMELINE --- */
-        .calendar-wrapper { flex: 1; overflow: auto; position: relative; scroll-behavior: auto; -webkit-overflow-scrolling: touch; }
-        table { border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-
-        th, td { 
-            border-bottom: 1px solid var(--border); border-right: 1px dashed var(--border); 
-            height: var(--row-height); width: var(--col-width); min-width: var(--col-width);
-            position: relative; box-sizing: border-box; padding: 0; vertical-align: middle;
+        /* --- MONTH CALENDAR --- */
+        .calendar-wrapper { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        .week-header {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            text-align: center; font-weight: 700; color: var(--text-muted);
+            font-size: 0.8em; padding: 8px 0; border-bottom: 1px solid var(--border); background: #fafafa;
+            flex-shrink: 0;
         }
 
-        /* STICKY HEADERS */
-        thead th { position: sticky; top: 0; background: var(--bg-body); z-index: 20; height: 45px; border-bottom: 2px solid var(--border); font-size: 0.85em; }
-        .room-col { 
-            position: sticky; left: 0; background: #f9f9f9; z-index: 30; 
-            width: var(--room-col-width); min-width: var(--room-col-width); max-width: var(--room-col-width);
-            border-right: 2px solid var(--border); text-align: left; padding: 0 10px;
+        .month-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); 
+            auto-rows: minmax(140px, 1fr); /* Taller rows to fit rooms */
         }
-        thead th.room-col { z-index: 40 !important; background: white; border-bottom: 2px solid var(--border); text-align: center; }
-        .today-col { background-color: #e8f0fe !important; }
 
-        /* ROOM GROUPS */
-        .group-header { background: #eee; font-weight: 800; color: #555; font-size: 0.75em; letter-spacing: 1px; padding: 5px 10px; text-transform: uppercase; }
+        .day-cell {
+            border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            background: white; padding: 2px; display: flex; flex-direction: column;
+            min-height: 140px;
+        }
+        
+        .day-header { text-align: right; padding-right: 5px; font-size: 0.8em; font-weight: 600; color: #777; margin-bottom: 2px; }
+        .day-cell.today .day-header { color: var(--primary); font-weight: 900; }
+        .day-cell.other-month { background: #fdfdfd; opacity: 0.5; }
 
-        /* CAPACITY CELLS */
-        .cap-cell { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.1s; border: 1px solid transparent; }
-        .cap-cell:hover { filter: brightness(0.95); border: 1px solid #999; }
-        
-        .status-free { background-color: var(--status-free); color: white; opacity: 0.3; } /* Light green for empty */
-        .status-part { background-color: var(--status-part); color: black; font-weight: bold; }
-        .status-full { background-color: var(--status-full); color: white; font-weight: bold; }
-        
-        .cap-text { font-size: 0.85em; }
-        .guest-mini { font-size: 0.65em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
+        /* --- ROOMS INSIDE DAY (2 COLUMNS SIDE BY SIDE) --- */
+        .day-body {
+            display: flex; flex: 1; gap: 4px;
+        }
+        .day-col {
+            flex: 1; display: flex; flex-direction: column; gap: 2px;
+            min-width: 0; /* Prevents overflow */
+        }
+        /* Separator line between Hostel Col and Room Col */
+        .day-col:first-child { border-right: 1px dashed #eee; padding-right: 2px; }
+
+        .room-pill {
+            font-size: 0.65em; padding: 3px; border-radius: 3px;
+            cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            display: block; text-align: left;
+            border: 1px solid transparent;
+        }
+        .room-pill:hover { border-color: #999; filter: brightness(0.95); }
+
+        /* STATUS COLORS */
+        .st-green { background: var(--status-free); color: var(--status-free-text); }
+        .st-yellow { background: var(--status-part); color: var(--status-part-text); font-weight:700; }
+        .st-red { background: var(--status-full); color: var(--status-full-text); font-weight:700; }
+
+        /* --- MOBILE OVERRIDES --- */
+        @media (max-width: 768px) {
+            .month-grid { display: flex; flex-direction: column; } 
+            .week-header { display: none; } 
+            .day-cell { min-height: auto; border-bottom: 4px solid #eee; padding: 5px; }
+            .day-header { text-align: left; font-size: 1em; background: #eee; padding: 5px; margin: -5px -5px 5px -5px; }
+            .day-body { flex-direction: row; gap: 5px; }
+            .room-pill { font-size: 0.8em; padding: 5px; margin-bottom: 2px; }
+            .top-bar { padding: 5px; gap: 5px; }
+            button { padding: 6px 8px; font-size: 0.8em; }
+            .header-row { gap: 5px; flex-wrap: wrap; }
+        }
 
         /* --- MODALS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 100; justify-content: center; align-items: center; display: none; }
@@ -94,10 +104,8 @@
         label { font-size: 0.75em; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; box-sizing: border-box; font-size: 16px; }
         
-        /* Receipt Box */
         .receipt-box { border: 1px solid #c8e6c9; background: #f1f8e9; padding: 10px; border-radius: var(--radius); margin-bottom: 15px; }
         .receipt-link { display: block; margin-top: 5px; font-size: 0.85em; color: #2e7d32; text-decoration: none; font-weight: 600; }
-
         .hidden { display: none !important; }
     </style>
 </head>
@@ -123,13 +131,18 @@
             <div class="header-row">
                 <button onclick="goToToday()" id="txt-today">Danas</button>
                 <button onclick="syncData()">🔄 <span id="txt-sync">Sync</span></button>
-                <button class="primary" onclick="openBookingModal()">+ <span id="txt-new">Nova rezervacija</span></button>
                 <button onclick="openRoomsModal()">⚙️</button>
+                <div style="display:flex; align-items:center; gap:5px; background:#eee; padding:2px; border-radius:4px;">
+                    <button class="icon-btn" onclick="changeMonth(-1)">◀</button>
+                    <span id="month-display" style="font-weight:700; font-size:0.9em; padding:0 5px;">...</span>
+                    <button class="icon-btn" onclick="changeMonth(1)">▶</button>
+                </div>
             </div>
         </div>
 
-        <div class="calendar-wrapper" id="calendar-container">
-            <table id="calendar"></table>
+        <div class="calendar-wrapper">
+            <div class="week-header" id="week-header"></div>
+            <div class="month-grid" id="month-grid"></div>
         </div>
     </div>
 
@@ -163,16 +176,9 @@
                     </div>
                 </div>
 
-                <!-- CAPACITY INPUTS -->
-                <div style="display:flex; gap:10px; background:#f0f7ff; padding:10px; border-radius:6px; margin-bottom:10px;">
-                    <div class="form-group" style="flex:1">
-                        <label>Adults</label>
-                        <input type="number" id="b-adults" min="1" value="1" required>
-                    </div>
-                    <div class="form-group" style="flex:1">
-                        <label>Children</label>
-                        <input type="number" id="b-children" min="0" value="0">
-                    </div>
+                <div class="form-group" style="background:#f0f7ff; padding:10px; border-radius:6px; margin-bottom:10px;">
+                    <label>Guests / Broj Osoba</label>
+                    <input type="number" id="b-guests" min="1" value="1" required>
                 </div>
 
                 <div style="display:flex; gap:10px;">
@@ -186,7 +192,6 @@
                     </div>
                 </div>
 
-                <!-- RECEIPT -->
                 <div class="receipt-box">
                     <label style="color:#2e7d32;">🧾 Receipt (Permanent)</label>
                     <input type="text" id="b-receipt-num" placeholder="Receipt Number" style="margin-bottom:5px;">
@@ -216,14 +221,17 @@
     <!-- ROOM CONFIG MODAL -->
     <div id="rooms-modal" class="modal-overlay">
         <div class="modal-card">
-            <h2>Manage Rooms & Capacity</h2>
+            <h2>Manage Rooms</h2>
             <div id="rooms-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
             <div style="display:flex; gap:5px;">
                 <input type="text" id="new-room-name" placeholder="Name" style="flex:2">
                 <input type="number" id="new-room-cap" placeholder="Cap" style="flex:1">
                 <button class="primary" onclick="addRoom()">+</button>
             </div>
-            <small>Format: Name (Capacity)</small>
+            <div style="margin-top:5px; font-size:0.8em; color:#666;">
+                <label><input type="radio" name="r-grp" value="1" checked> Group 1 (Left)</label>
+                <label><input type="radio" name="r-grp" value="2"> Group 2 (Right)</label>
+            </div>
         </div>
     </div>
 
@@ -236,9 +244,8 @@
 
         let tokenClient, rootFolderId, receiptFolderId;
         let bookingsData = [];
+        let currentViewDate = new Date();
         
-        // --- NEW ROOM DATA STRUCTURE ---
-        // We now store objects with name and capacity
         let configData = {
             lang: "hr",
             rooms: [
@@ -257,36 +264,13 @@
         };
 
         const i18n = {
-            en: { brand: "Capacity Mgr", today: "Today", new: "New Booking", sync: "Sync", name: "Guest", in: "In", out: "Out", save: "Save" },
-            hr: { brand: "Kapacitet", today: "Danas", new: "Nova rezervacija", sync: "Sync", name: "Gost", in: "Prijava", out: "Odjava", save: "Spremi" }
+            en: { brand: "Calendar", today: "Today", sync: "Sync", name: "Guest", in: "In", out: "Out", save: "Save", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] },
+            hr: { brand: "Kalendar", today: "Danas", sync: "Sync", name: "Gost", in: "Prijava", out: "Odjava", save: "Spremi", days: ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"] }
         };
 
         // --- AUTH ---
-        function gapiLoaded() {
-            gapi.load('client', async () => {
-                await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
-                if(localStorage.getItem('g_token')){
-                    gapi.client.setToken(JSON.parse(localStorage.getItem('g_token')));
-                    try { 
-                        document.getElementById('auth-screen').classList.add('hidden'); 
-                        document.getElementById('app-screen').classList.remove('hidden'); 
-                        await initDriveStructure(); await syncData(); 
-                    } catch(e) { localStorage.removeItem('g_token'); location.reload(); }
-                }
-            });
-        }
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID, scope: SCOPES,
-                callback: async (resp) => {
-                    if (resp.error) throw resp;
-                    localStorage.setItem('g_token', JSON.stringify(gapi.client.getToken()));
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('app-screen').classList.remove('hidden');
-                    await initDriveStructure(); await syncData();
-                },
-            });
-        }
+        function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); if(localStorage.getItem('g_token')){ gapi.client.setToken(JSON.parse(localStorage.getItem('g_token'))); try { document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden'); await initDriveStructure(); await syncData(); } catch(e) { localStorage.removeItem('g_token'); location.reload(); } } }); }
+        function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error) throw resp; localStorage.setItem('g_token', JSON.stringify(gapi.client.getToken())); document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden'); await initDriveStructure(); await syncData(); }, }); }
         function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
         function handleSignoutClick() { const t=gapi.client.getToken(); if(t) google.accounts.oauth2.revoke(t.access_token); gapi.client.setToken(''); localStorage.removeItem('g_token'); location.reload(); }
 
@@ -306,136 +290,89 @@
 
         // --- SYNC ---
         async function syncData() {
-            const cId = await findFile('config_v2.json'); // Changed name to avoid conflict with old config
-            if (cId) {
-                const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' });
-                if(r.result.rooms) configData.rooms = r.result.rooms;
-                if(r.result.lang) configData.lang = r.result.lang;
-            }
+            const cId = await findFile('config_v3.json');
+            if (cId) { const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); if(r.result.rooms) configData.rooms = r.result.rooms; if(r.result.lang) configData.lang = r.result.lang; }
             applyLanguage(configData.lang);
-            const csvId = await findFile('bookings_v2.csv'); // Changed CSV name for new structure
-            if (csvId) {
-                const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' });
-                bookingsData = parseCSV(r.body);
-            }
+            const csvId = await findFile('bookings_v3.csv');
+            if (csvId) { const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); bookingsData = parseCSV(r.body); }
             await runPrivacyCleanup();
-            renderTimeline();
+            renderMonth();
         }
-
         async function saveAllToDrive() {
-            const cId = await findFile('config_v2.json');
-            const cContent = JSON.stringify(configData);
-            if(cId) await updateFile(cId, cContent, 'application/json'); else await createFile('config_v2.json', cContent, rootFolderId, 'application/json');
-
-            const csvContent = toCSV(bookingsData);
-            const csvId = await findFile('bookings_v2.csv');
-            if (csvId) {
-                const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' });
-                const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
-                if (hours > 12) await copyFile(csvId, 'bookings_v2_12h.csv');
-                await updateFile(csvId, csvContent, 'text/csv');
-            } else { await createFile('bookings_v2.csv', csvContent, rootFolderId, 'text/csv'); }
+            const cId = await findFile('config_v3.json'); const cContent = JSON.stringify(configData); if(cId) await updateFile(cId, cContent, 'application/json'); else await createFile('config_v3.json', cContent, rootFolderId, 'application/json');
+            const csvContent = toCSV(bookingsData); const csvId = await findFile('bookings_v3.csv');
+            if (csvId) { const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' }); const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5; if (hours > 12) await copyFile(csvId, 'bookings_v3_12h.csv'); await updateFile(csvId, csvContent, 'text/csv'); } else { await createFile('bookings_v3.csv', csvContent, rootFolderId, 'text/csv'); }
         }
 
-        // --- RENDER TIMELINE ---
-        function renderTimeline() {
-            const table = document.getElementById('calendar'); table.innerHTML = '';
-            const today = new Date(); today.setHours(0,0,0,0);
-            
-            // Generate Dates: -2 days to +60 days
-            const dates = [];
-            for(let i=-2; i<60; i++) { const d = new Date(today); d.setDate(today.getDate()+i); dates.push(d); }
+        // --- CALENDAR ENGINE ---
+        function goToToday() { currentViewDate = new Date(); renderMonth(); }
+        function changeMonth(d) { currentViewDate.setMonth(currentViewDate.getMonth() + d); renderMonth(); }
 
-            // HEADERS
-            let thead = '<thead><tr><th class="room-col">Room</th>';
-            dates.forEach(d => {
-                const iso = d.toISOString().split('T')[0];
-                const bg = (d.getDay()==0||d.getDay()==6)?'background:#f9f9f9':'';
-                const cls = d.getTime()===today.getTime()?'today-col':'';
-                thead += `<th class="${cls}" style="${bg}" data-date="${iso}">${d.getDate()}<br>${d.toLocaleDateString(configData.lang,{weekday:'short'})}</th>`;
-            });
-            thead += '</tr></thead><tbody>';
+        function renderMonth() {
+            const grid = document.getElementById('month-grid'); grid.innerHTML = '';
+            const year = currentViewDate.getFullYear();
+            const month = currentViewDate.getMonth();
+            const mNames = configData.lang === 'hr' ? ["Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj", "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac"] : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('month-display').innerText = `${mNames[month]} ${year}`;
 
-            // Groups
-            const groups = { 1: "Hostel / Apart", 2: "Rooms / Sobe" };
-            
-            [1, 2].forEach(gId => {
-                // Group Header
-                thead += `<tr><td colspan="${dates.length+1}" class="group-header">${groups[gId]}</td></tr>`;
-                
-                const roomsInGroup = configData.rooms.filter(r => (r.group || 1) == gId);
-                
-                roomsInGroup.forEach(r => {
-                    thead += `<tr><td class="room-col"><div>${r.name}</div><small style="color:#666">Max: ${r.cap}</small></td>`;
-                    
-                    dates.forEach(d => {
-                        const iso = d.toISOString().split('T')[0];
-                        // Calculate Occupancy for this Room on this Date
-                        let occup = 0;
-                        // Find all bookings for this room that cover this date
-                        const dayBookings = bookingsData.filter(b => b.room === r.name && iso >= b.start && iso < b.end);
-                        dayBookings.forEach(b => occup += (parseInt(b.adults||0) + parseInt(b.children||0)));
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            let startDay = firstDay.getDay() - 1; if (startDay === -1) startDay = 6;
+            const todayStr = new Date().toISOString().split('T')[0];
 
-                        let statusClass = 'status-free';
-                        let label = 'Free';
-                        if(occup > 0 && occup < r.cap) { statusClass = 'status-part'; label = `${occup}/${r.cap}`; }
-                        else if(occup >= r.cap) { statusClass = 'status-full'; label = `${occup}/${r.cap}`; }
-
-                        // On click, if multiple bookings, show a picker? Or just open new booking modal?
-                        // Simple logic: Click opens modal. If bookings exist, maybe edit the first one or ask to add new.
-                        // For this version: Click opens "New" if space, or alerts if full.
-                        // Better: Just open Modal with date preset.
-                        
-                        let cellContent = `<div class="cap-text">${label}</div>`;
-                        if(occup > 0) {
-                            // Show first guest name mini
-                            cellContent += `<div class="guest-mini">${dayBookings[0].guestName}</div>`;
-                        }
-
-                        thead += `<td style="padding:0;">
-                            <div class="cap-cell ${statusClass}" onclick="handleCellClick('${iso}', '${r.name}', ${JSON.stringify(dayBookings).replace(/"/g, '&quot;')})">
-                                ${cellContent}
-                            </div>
-                        </td>`;
-                    });
-                    thead += '</tr>';
-                });
-            });
-
-            thead += '</tbody>';
-            table.innerHTML = thead;
-
-            // Populate Select with Capacity info
-            document.getElementById('b-room').innerHTML = configData.rooms.map(r => `<option value="${r.name}">${r.name} (Max ${r.cap})</option>`).join('');
-
-            setTimeout(goToToday, 100);
-        }
-
-        function goToToday() {
-            const el = document.querySelector(`th[data-date="${new Date().toISOString().split('T')[0]}"]`);
-            const c = document.getElementById('calendar-container');
-            if(el && c) c.scrollLeft = el.offsetLeft - 160;
-        }
-
-        function handleCellClick(date, roomName, existingBookings) {
-            // If existing bookings, we could show a list to edit.
-            // For simplicity, if there are bookings, we ask if user wants to Edit (first one) or Add New.
-            if(existingBookings && existingBookings.length > 0) {
-                // If strictly 1 booking, open it.
-                if(existingBookings.length === 1) openBookingModal(existingBookings[0]);
-                else {
-                    // Logic for multiple bookings in same room/day (e.g. shared hostel room)
-                    // Just open the first one for now, or allow adding new.
-                    // Let's just open the first one to edit.
-                    if(confirm("Edit existing booking? Cancel to add new.")) {
-                        openBookingModal(existingBookings[0]);
-                    } else {
-                        openBookingModal(null, date, roomName);
-                    }
-                }
-            } else {
-                openBookingModal(null, date, roomName);
+            // Padding
+            for (let i = startDay; i > 0; i--) {
+                const d = document.createElement('div'); d.className = 'day-cell other-month';
+                d.innerHTML = `<div class="day-header">${new Date(year, month, 0).getDate() - i + 1}</div>`; grid.appendChild(d);
             }
+
+            // Days
+            for (let d = 1; d <= lastDay.getDate(); d++) {
+                const dateObj = new Date(year, month, d);
+                const offset = dateObj.getTimezoneOffset() * 60000;
+                const isoDate = new Date(dateObj.getTime() - offset).toISOString().split('T')[0];
+                
+                const dayDiv = document.createElement('div'); dayDiv.className = 'day-cell';
+                if (isoDate === todayStr) dayDiv.classList.add('today');
+                
+                let html = `<div class="day-header">${d}</div><div class="day-body">`;
+                
+                // LEFT COLUMN (Group 1)
+                html += `<div class="day-col">`;
+                configData.rooms.filter(r => (r.group||1) == 1).forEach(r => { html += buildRoomPill(r, isoDate); });
+                html += `</div>`;
+                
+                // RIGHT COLUMN (Group 2)
+                html += `<div class="day-col">`;
+                configData.rooms.filter(r => (r.group||1) == 2).forEach(r => { html += buildRoomPill(r, isoDate); });
+                html += `</div></div>`; // End body
+                
+                dayDiv.innerHTML = html;
+                grid.appendChild(dayDiv);
+            }
+            document.getElementById('b-room').innerHTML = configData.rooms.map(r => `<option value="${r.name}">${r.name} (Max ${r.cap})</option>`).join('');
+        }
+
+        function buildRoomPill(room, dateIso) {
+            const bs = bookingsData.filter(b => b.room === room.name && dateIso >= b.start && dateIso < b.end);
+            let occ = 0;
+            bs.forEach(b => occ += parseInt(b.guests||1));
+
+            let cls = 'st-green'; 
+            if (occ > 0 && occ < room.cap) cls = 'st-yellow';
+            else if (occ >= room.cap) cls = 'st-red';
+
+            // Format: Name (Occupied/Max)
+            const label = `${room.name} (${occ}/${room.cap})`;
+            const clickData = bs.length > 0 ? JSON.stringify(bs).replace(/"/g, '&quot;') : 'null';
+            
+            return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)">${label}</div>`;
+        }
+
+        function handlePillClick(date, room, existingBookings, e) {
+            e.stopPropagation();
+            if(existingBookings && existingBookings.length > 0) openBookingModal(existingBookings[0]);
+            else openBookingModal(null, date, room);
         }
 
         // --- BOOKING LOGIC ---
@@ -449,23 +386,18 @@
                 document.getElementById('b-name').value = b.guestName;
                 document.getElementById('b-room').value = b.room;
                 document.getElementById('b-platform').value = b.platform;
-                document.getElementById('b-adults').value = b.adults || 1;
-                document.getElementById('b-children').value = b.children || 0;
+                document.getElementById('b-guests').value = b.guests || 1;
                 document.getElementById('b-start').value = b.start;
                 document.getElementById('b-end').value = b.end;
                 document.getElementById('b-phone').value = b.phone || '';
                 document.getElementById('b-email').value = b.email || '';
                 document.getElementById('b-receipt-num').value = b.receiptNumber || "";
-                
-                if(b.receiptLinkId) { lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`; lnk.classList.remove('hidden'); } 
-                else { lnk.classList.add('hidden'); }
-
+                if(b.receiptLinkId) { lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`; lnk.classList.remove('hidden'); } else { lnk.classList.add('hidden'); }
                 document.getElementById('btn-delete').classList.remove('hidden');
             } else {
                 f.reset();
                 document.getElementById('booking-id').value = "";
-                document.getElementById('b-adults').value = 1;
-                document.getElementById('b-children').value = 0;
+                document.getElementById('b-guests').value = 1;
                 if(roomHint) document.getElementById('b-room').value = roomHint;
                 if(dateHint) {
                     document.getElementById('b-start').value = dateHint;
@@ -480,7 +412,7 @@
 
         document.getElementById('booking-form').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-save'); btn.disabled=true; btn.innerText="Processing...";
+            const btn = document.getElementById('btn-save'); btn.disabled=true; btn.innerText="...";
             
             const id = document.getElementById('booking-id').value || crypto.randomUUID();
             const isNew = !document.getElementById('booking-id').value;
@@ -493,7 +425,6 @@
                 folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root);
                 for(let f of photos) await uploadFile(f, folderId);
             }
-
             let receiptId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.receiptLinkId||"");
             if(receipt) receiptId = await uploadFile(receipt, receiptFolderId);
 
@@ -503,63 +434,52 @@
                 room: document.getElementById('b-room').value, 
                 guestName: document.getElementById('b-name').value, 
                 platform: document.getElementById('b-platform').value,
-                adults: document.getElementById('b-adults').value,
-                children: document.getElementById('b-children').value,
+                guests: document.getElementById('b-guests').value,
                 start: document.getElementById('b-start').value, 
                 end: document.getElementById('b-end').value, 
                 phone: document.getElementById('b-phone').value, 
                 email: document.getElementById('b-email').value 
             };
-
             if(isNew) bookingsData.push(b); else bookingsData[bookingsData.findIndex(x=>x.id===id)] = b;
-            
-            await saveAllToDrive(); renderTimeline(); closeModal('booking-modal');
+            await saveAllToDrive(); renderMonth(); closeModal('booking-modal');
             btn.disabled=false; btn.innerText="Save";
         };
-        async function deleteBooking() { if(confirm("Delete?")){ bookingsData=bookingsData.filter(b=>b.id!==document.getElementById('booking-id').value); await saveAllToDrive(); renderTimeline(); closeModal('booking-modal'); } }
+        async function deleteBooking() { if(confirm("Delete?")){ bookingsData=bookingsData.filter(b=>b.id!==document.getElementById('booking-id').value); await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); } }
 
         // --- ROOMS CONFIG ---
         function openRoomsModal() {
             const l = document.getElementById('rooms-list'); l.innerHTML = '';
             configData.rooms.forEach((r, i) => {
                 const d = document.createElement('div'); d.className = 'room-item';
-                d.innerHTML = `<span>${r.name} (Max ${r.cap})</span> <button class="danger" onclick="removeRoom(${i})">&times;</button>`;
+                d.innerHTML = `<span>${r.name} (${r.cap}) G:${r.group}</span> <button class="danger" onclick="removeRoom(${i})">&times;</button>`;
                 l.appendChild(d);
             });
             document.getElementById('rooms-modal').style.display = 'flex';
         }
         function addRoom() { 
-            const n = document.getElementById('new-room-name').value;
-            const c = document.getElementById('new-room-cap').value;
-            if(n && c){ configData.rooms.push({name:n, cap:parseInt(c), group:1}); openRoomsModal(); renderTimeline(); saveAllToDrive(); } 
+            const n=document.getElementById('new-room-name').value; 
+            const c=document.getElementById('new-room-cap').value; 
+            const g = document.querySelector('input[name="r-grp"]:checked').value;
+            if(n&&c){ configData.rooms.push({name:n, cap:parseInt(c), group:parseInt(g)}); openRoomsModal(); renderMonth(); saveAllToDrive(); } 
         }
-        function removeRoom(i) { if(confirm('Delete?')){ configData.rooms.splice(i,1); openRoomsModal(); renderTimeline(); saveAllToDrive(); } }
+        function removeRoom(i) { if(confirm('Delete?')){ configData.rooms.splice(i,1); openRoomsModal(); renderMonth(); saveAllToDrive(); } }
 
         // --- EXPORT ---
         async function exportToSheets() {
-            const btn = document.querySelector('button[onclick="exportToSheets()"]');
-            const orig = btn.innerText; btn.innerText = "...";
-            let csv = 'In,Out,Room,Guest,Adults,Children,Platform,Receipt#,Link\n';
-            bookingsData.forEach(b => {
-                const l = b.receiptLinkId ? `https://drive.google.com/file/d/${b.receiptLinkId}/view` : "";
-                const r = [b.start, b.end, b.room, b.guestName, b.adults, b.children, b.platform, b.receiptNumber, l];
-                csv += r.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",") + "\n";
-            });
+            const btn = document.querySelector('button[onclick="exportToSheets()"]'); const orig = btn.innerText; btn.innerText = "...";
+            let csv = 'In,Out,Room,Guest,Guests,Platform,Receipt#,Link\n';
+            bookingsData.forEach(b => { const l = b.receiptLinkId ? `https://drive.google.com/file/d/${b.receiptLinkId}/view` : ""; const r = [b.start, b.end, b.room, b.guestName, b.guests, b.platform, b.receiptNumber, l]; csv += r.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",") + "\n"; });
             const meta = { name: `Hostel_Export_${new Date().toISOString()}`, mimeType: 'application/vnd.google-apps.spreadsheet', parents: [rootFolderId] };
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
-            form.append('file', new Blob([csv], { type: 'text/csv' }));
+            const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' })); form.append('file', new Blob([csv], { type: 'text/csv' }));
             const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }, body: form });
-            const j = await res.json();
-            btn.innerText = orig;
-            if(j.id) window.open(`https://docs.google.com/spreadsheets/d/${j.id}`, '_blank');
+            const j = await res.json(); btn.innerText = orig; if(j.id) window.open(`https://docs.google.com/spreadsheets/d/${j.id}`, '_blank');
         }
 
         // --- HELPERS ---
-        function applyLanguage(l){ configData.lang = l; document.getElementById('txt-brand').innerText = i18n[l].brand; document.getElementById('txt-today').innerText = i18n[l].today; document.getElementById('txt-new').innerText = i18n[l].new; renderTimeline(); }
+        function applyLanguage(l){ configData.lang = l; document.getElementById('txt-brand').innerText = i18n[l].brand; document.getElementById('txt-today').innerText = i18n[l].today; document.getElementById('week-header').innerHTML = i18n[l].days.map(d => `<div>${d}</div>`).join(''); renderMonth(); }
         function toggleLang(){ applyLanguage(configData.lang==='en'?'hr':'en'); saveAllToDrive(); }
         async function runPrivacyCleanup() { const now = new Date(); let ch = false; for(let b of bookingsData) { if(!b.folderId) continue; const end = new Date(b.end); end.setHours(end.getHours()+24); if(now>end) { try{await gapi.client.drive.files.delete({fileId:b.folderId}); b.folderId=""; ch=true;}catch(e){} } } if(ch) await saveAllToDrive(); }
-        function toCSV(d){const h=["id","room","guestName","platform","adults","children","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
+        function toCSV(d){const h=["id","room","guestName","platform","guests","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
         function parseCSV(t){const[h,...l]=t.trim().split("\n");if(!h)return[];const k=h.split("|");return l.map(r=>{const v=r.split("|");return k.reduce((a,c,i)=>({...a,[c]:v[i]}),{});});}
         async function findFile(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`});return r.result.files[0]?.id||null;}
         async function createFile(n,c,p,t){const f=new FormData();f.append('metadata',new Blob([JSON.stringify({name:n,parents:[p]})],{type:'application/json'}));f.append('file',new Blob([c],{type:t}));await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:f});}
