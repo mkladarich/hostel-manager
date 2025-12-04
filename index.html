@@ -10,9 +10,9 @@
             --bg-body: #FFFFFF; --bg-subtle: #F7F7F5; 
             --text-main: #37352F; --text-muted: #787774; --border: #E1E1E0;
             --primary: #0081C9; 
-            --status-free: #e8f5e9; --status-free-text: #2e7d32; 
-            --status-part: #fff3e0; --status-part-text: #ef6c00; 
-            --status-full: #ffebee; --status-full-text: #c62828; 
+            --status-free: #e8f5e9; --status-free-text: #2e7d32; /* Green */
+            --status-part: #fff3e0; --status-part-text: #ef6c00; /* Yellow */
+            --status-full: #ffebee; --status-full-text: #c62828; /* Red */
             --radius: 4px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
         }
 
@@ -35,7 +35,7 @@
         button.primary { background: var(--text-main); color: white; border-color: var(--text-main); }
         button.success { color: #2e7d32; border-color: #c8e6c9; background: #f1f8e9; }
         button.danger { color: #d93025; border-color: #ffcccb; background: #fff5f5; }
-        button.icon-btn { border: none; background: transparent; padding: 0 10px; font-size: 1.2em; }
+        button.icon-btn { border: none; background: transparent; padding: 0 10px; font-size: 1.2em; cursor: pointer; }
 
         .sync-label { font-size: 0.75em; color: var(--text-muted); margin-right: 5px; font-variant-numeric: tabular-nums; }
 
@@ -77,14 +77,14 @@
         }
         .room-pill:hover { border-color: #999; filter: brightness(0.95); }
 
-        /* STATUS COLORS */
+        /* COLORS */
         .st-green { background: var(--status-free); color: var(--status-free-text); }
         .st-yellow { background: var(--status-part); color: var(--status-part-text); font-weight:700; }
         .st-red { background: var(--status-full); color: var(--status-full-text); font-weight:700; }
 
         .pill-abbr { display: none; font-weight: 700; text-align: center; }
 
-        /* --- MOBILE OVERRIDES --- */
+        /* --- MOBILE --- */
         @media (max-width: 768px) {
             .month-grid { display: flex; flex-direction: column; } 
             .week-header { display: none; } 
@@ -126,12 +126,13 @@
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); width: 100%; box-sizing: border-box; font-size: 16px; }
         .receipt-box { border: 1px solid #c8e6c9; background: #f1f8e9; padding: 10px; border-radius: var(--radius); margin-bottom: 15px; }
         .receipt-link { display: block; margin-top: 5px; font-size: 0.85em; color: #2e7d32; text-decoration: none; font-weight: 600; }
+        
+        .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- AUTH -->
     <div id="auth-screen" style="height:100vh; display:flex; justify-content:center; align-items:center; background:var(--bg-subtle);">
         <div style="text-align:center; background:white; padding:40px; border-radius:12px; box-shadow:var(--shadow);">
             <h1>🏨 Hostel OS</h1>
@@ -139,12 +140,11 @@
         </div>
     </div>
 
-    <!-- APP -->
     <div id="app-screen" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
         <div class="top-bar">
             <div class="header-row">
                 <div class="brand" onclick="toggleMobileView()" title="Toggle View">📅 <span id="txt-brand">Kalendar</span></div>
-                <button onclick="exportToSheets()" class="success">📄 Export Sheets</button>
+                <button onclick="exportToSheets()" class="success">📄 Excel / Sheets</button>
                 <button onclick="toggleLang()">HR/EN</button>
                 <button onclick="handleSignoutClick()" class="danger">🚪</button>
             </div>
@@ -174,33 +174,39 @@
     <div id="booking-modal" class="modal-overlay">
         <div class="modal-card">
             <div style="display:flex; justify-content:space-between; margin-bottom: 15px;">
-                <h2 style="margin:0; font-size: 1.2em;">Reservation</h2>
-                <button class="icon-btn" style="border:none; background:none; font-size:1.5em;" onclick="closeModal('booking-modal')">&times;</button>
+                <h2 style="margin:0; font-size: 1.2em;" id="modal-title">Rezervacija</h2>
+                <button class="icon-btn" style="font-size:1.5em;" onclick="closeModal('booking-modal')">&times;</button>
             </div>
             <form id="booking-form">
                 <input type="hidden" id="booking-id">
-                <div class="form-group"><label id="lbl-name">Guest Name</label><input type="text" id="b-name" required></div>
+                <div class="form-group"><label id="lbl-name">Gost / Guest</label><input type="text" id="b-name" required></div>
                 <div style="display:flex; gap:10px;">
-                    <div class="form-group" style="flex:2"><label id="lbl-room">Room (Capacity)</label><select id="b-room" required></select></div>
-                    <div class="form-group" style="flex:1"><label>Platform</label><select id="b-platform"><option value="Uživo">Uživo</option><option value="Booking">Booking.com</option><option value="Airbnb">Airbnb</option></select></div>
+                    <div class="form-group" style="flex:2"><label id="lbl-room">Soba (Kapacitet)</label><select id="b-room" required></select></div>
+                    <div class="form-group" style="flex:1"><label id="lbl-platform">Platforma</label><select id="b-platform"><option value="Direkt">Direkt</option><option value="Email">Email</option><option value="Booking">Booking.com</option><option value="Airbnb">Airbnb</option></select></div>
                 </div>
                 <div class="form-group" style="background:#f0f7ff; padding:10px; border-radius:6px; margin-bottom:10px;">
-                    <label>Guests / Broj Osoba</label><input type="number" id="b-guests" min="1" value="1" required>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="flex:1;"><label id="lbl-guests">Broj Osoba / Guests</label><input type="number" id="b-guests" min="1" value="1" required></div>
+                        <div style="flex:1; margin-left:10px; display:flex; align-items:center; height:100%; padding-top:15px;">
+                            <input type="checkbox" id="b-breakfast" style="width:20px; height:20px;"> 
+                            <label for="b-breakfast" style="margin-left:5px; cursor:pointer;" id="lbl-breakfast">Doručak / Breakfast</label>
+                        </div>
+                    </div>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <div class="form-group" style="flex:1"><label id="lbl-in">Check-in</label><input type="date" id="b-start" required></div>
-                    <div class="form-group" style="flex:1"><label id="lbl-out">Check-out</label><input type="date" id="b-end" required></div>
+                    <div class="form-group" style="flex:1"><label>Check-in</label><input type="date" id="b-start" required></div>
+                    <div class="form-group" style="flex:1"><label>Check-out</label><input type="date" id="b-end" required></div>
                 </div>
                 <div class="receipt-box">
-                    <label style="color:#2e7d32;">🧾 Receipt (Permanent)</label>
-                    <input type="text" id="b-receipt-num" placeholder="Receipt Number" style="margin-bottom:5px;">
+                    <label id="lbl-receipt" style="color:#2e7d32;">🧾 Račun / Receipt (Permanent)</label>
+                    <input type="text" id="b-receipt-num" placeholder="#12345" style="margin-bottom:5px;">
                     <input type="file" id="b-receipt-photo" accept="image/*">
                     <a id="lnk-receipt" href="#" target="_blank" class="receipt-link hidden">👁️ View Receipt</a>
                 </div>
-                <div class="form-group"><label id="lbl-photos">Evidentiary Photos (24h)</label><input type="file" id="b-photos" multiple accept="image/*"></div>
-                <div class="form-group"><label id="lbl-contact">Contact</label><input type="tel" id="b-phone"><input type="email" id="b-email"></div>
+                <div class="form-group"><label id="lbl-photos">Slike / Photos (24h)</label><input type="file" id="b-photos" multiple accept="image/*"></div>
+                <div class="form-group"><label id="lbl-contact">Kontakt</label><input type="tel" id="b-phone"><input type="email" id="b-email"></div>
                 <div style="display:flex; gap:10px;">
-                    <button type="submit" class="primary" style="flex:1;" id="btn-save">Save</button>
+                    <button type="submit" class="primary" style="flex:1;" id="btn-save">Spremi</button>
                     <button type="button" id="btn-delete" class="danger hidden" onclick="deleteBooking()">🗑</button>
                 </div>
             </form>
@@ -210,7 +216,10 @@
     <!-- ROOM CONFIG MODAL -->
     <div id="rooms-modal" class="modal-overlay">
         <div class="modal-card">
-            <h2>Manage Rooms</h2>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 15px;">
+                <h2 style="margin:0; font-size: 1.2em;" id="lbl-manage">Uredi Sobe</h2>
+                <button class="icon-btn" style="font-size:1.5em;" onclick="closeModal('rooms-modal')">&times;</button>
+            </div>
             <div id="rooms-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
             <div style="display:flex; gap:5px;">
                 <input type="text" id="new-room-name" placeholder="Name" style="flex:2">
@@ -218,8 +227,8 @@
                 <button class="primary" onclick="addRoom()">+</button>
             </div>
             <div style="margin-top:5px; font-size:0.8em; color:#666;">
-                <label><input type="radio" name="r-grp" value="1" checked> Group 1 (Left)</label>
-                <label><input type="radio" name="r-grp" value="2"> Group 2 (Right)</label>
+                <label><input type="radio" name="r-grp" value="1" checked> Grp 1 (Left)</label>
+                <label><input type="radio" name="r-grp" value="2"> Grp 2 (Right)</label>
             </div>
         </div>
     </div>
@@ -252,8 +261,8 @@
         };
 
         const i18n = {
-            en: { brand: "Calendar", today: "Today", sync: "Sync", new: "New Booking", name: "Guest", in: "In", out: "Out", save: "Save", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] },
-            hr: { brand: "Kalendar", today: "Danas", sync: "Sync", new: "Nova rezervacija", name: "Gost", in: "Prijava", out: "Odjava", save: "Spremi", days: ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"] }
+            en: { brand: "Calendar", today: "Today", sync: "Sync", new: "New Booking", name: "Guest Name", room: "Room (Cap)", plat: "Platform", guests: "Guests", breakfast: "Breakfast", contact: "Contact", photos: "Photos (24h)", receipt: "Receipt (Permanent)", save: "Save", manage: "Manage Rooms", loginDesc: "Manager & Evidence", btnLogin: "Login with Google", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] },
+            hr: { brand: "Kalendar", today: "Danas", sync: "Sinkroniziraj", new: "Nova rezervacija", name: "Ime Gosta", room: "Soba (Kapacitet)", plat: "Platforma", guests: "Broj Osoba", breakfast: "Doručak", contact: "Kontakt", photos: "Slike (24h)", receipt: "Račun (Trajno)", save: "Spremi", manage: "Uredi Sobe", loginDesc: "Sustav za upravljanje i evidenciju", btnLogin: "Prijava putem Googla", days: ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"] }
         };
 
         function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); if(localStorage.getItem('g_token')){ gapi.client.setToken(JSON.parse(localStorage.getItem('g_token'))); try { document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden'); await initDriveStructure(); await syncData(); } catch(e) { localStorage.removeItem('g_token'); location.reload(); } } }); }
@@ -264,7 +273,7 @@
         // --- DRIVE STRUCTURE ---
         async function initDriveStructure() {
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
-            const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id)' });
+            const res = await gapi.client.drive.files.list({ q: q, orderBy: 'createdTime', fields: 'files(id)' });
             rootFolderId = res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: 'HostelManager_App_Data', mimeType: 'application/vnd.google-apps.folder' }, fields: 'id' })).result.id;
             await ensureFolderExists('customers', rootFolderId);
             receiptFolderId = await ensureFolderExists('receipts', rootFolderId);
@@ -276,88 +285,37 @@
             return res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: n, mimeType: 'application/vnd.google-apps.folder', parents: [p] }, fields: 'id' })).result.id;
         }
 
-        // --- SMARTER SYNC WITH DUPLICATE CLEANUP ---
-        async function resolveFileId(fileName) {
-            // Find ALL files with this name in our folder
-            const q = `name='${fileName}' and '${rootFolderId}' in parents and trashed=false`;
-            const res = await gapi.client.drive.files.list({ q: q, fields: 'files(id, modifiedTime)', orderBy: 'modifiedTime desc' });
-            
-            if (res.result.files.length === 0) return null;
-            
-            // The first file is the most recently modified (Current Truth)
-            const currentFileId = res.result.files[0].id;
-
-            // If duplicates exist, delete them so phones don't get confused
-            if (res.result.files.length > 1) {
-                console.log(`Cleaning up ${res.result.files.length - 1} duplicates for ${fileName}`);
-                for (let i = 1; i < res.result.files.length; i++) {
-                    await gapi.client.drive.files.delete({ fileId: res.result.files[i].id });
-                }
-            }
-            return currentFileId;
-        }
-
+        // --- SYNC ---
         async function syncData() {
             const btn = document.getElementById('txt-sync'); const orig = btn.innerText; btn.innerText = "...";
-            
-            // CONFIG
-            const cId = await resolveFileId('config_master.json');
-            if (cId) { 
-                const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); 
-                if(r.result.rooms) configData.rooms = r.result.rooms; 
-                if(r.result.lang) configData.lang = r.result.lang; 
-            }
+            const cId = await findFileExact('config_master.json');
+            if (cId) { const r = await gapi.client.drive.files.get({ fileId: cId, alt: 'media' }); if(r.result.rooms) configData.rooms = r.result.rooms; if(r.result.lang) configData.lang = r.result.lang; }
             applyLanguage(configData.lang);
             
-            // BOOKINGS
-            const csvId = await resolveFileId('bookings_master.csv');
-            if (csvId) { 
-                const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); 
-                bookingsData = parseCSV(r.body); 
-            }
+            const csvId = await findFileExact('bookings_master.csv');
+            if (csvId) { const r = await gapi.client.drive.files.get({ fileId: csvId, alt: 'media' }); bookingsData = parseCSV(r.body); }
             
             await runPrivacyCleanup();
             renderMonth();
-            
-            const now = new Date();
-            document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-            btn.innerText = orig;
+            const now = new Date(); document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`; btn.innerText = orig;
         }
 
         async function saveAllToDrive() {
-            const btn = document.getElementById('txt-sync'); btn.innerText = "Saving...";
-            
-            // CONFIG
-            let cId = await resolveFileId('config_master.json');
-            if(!cId) {
-                // Create if doesn't exist
-                await createFile('config_master.json', JSON.stringify(configData), rootFolderId, 'application/json');
-                cId = await resolveFileId('config_master.json'); // Get the ID we just created
-            } else {
-                await updateFile(cId, JSON.stringify(configData), 'application/json');
-            }
+            const btn = document.getElementById('txt-sync'); btn.innerText = "...";
+            const cId = await resolveFileId('config_master.json');
+            if(!cId) await createFile('config_master.json', JSON.stringify(configData), rootFolderId, 'application/json');
+            else await updateFile(cId, JSON.stringify(configData), 'application/json');
 
-            // BOOKINGS
-            let csvId = await resolveFileId('bookings_master.csv');
             const csvContent = toCSV(bookingsData);
-            
+            const csvId = await resolveFileId('bookings_master.csv');
             if (csvId) {
-                // Backup logic
                 const meta = await gapi.client.drive.files.get({ fileId: csvId, fields: 'modifiedTime' });
                 const hours = (new Date() - new Date(meta.result.modifiedTime)) / 36e5;
-                if (hours > 12) {
-                    const ts = new Date().toISOString().replace(/[:.]/g, '-');
-                    await gapi.client.drive.files.copy({ fileId: csvId, resource: { name: `backup_${ts}.csv`, parents: [backupFolderId] } });
-                }
+                if (hours > 12) { const ts = new Date().toISOString().replace(/[:.]/g, '-'); await gapi.client.drive.files.copy({ fileId: csvId, resource: { name: `backup_${ts}.csv`, parents: [backupFolderId] } }); }
                 await updateFile(csvId, csvContent, 'text/csv');
-            } else { 
-                await createFile('bookings_master.csv', csvContent, rootFolderId, 'text/csv'); 
-            }
+            } else { await createFile('bookings_master.csv', csvContent, rootFolderId, 'text/csv'); }
             
-            // Update UI
-            const now = new Date();
-            document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-            btn.innerText = i18n[configData.lang].sync;
+            const now = new Date(); document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`; btn.innerText = i18n[configData.lang].sync;
         }
 
         // --- APP LOGIC ---
@@ -386,7 +344,6 @@
                 const dateObj = new Date(year, month, d);
                 const offset = dateObj.getTimezoneOffset() * 60000;
                 const isoDate = new Date(dateObj.getTime() - offset).toISOString().split('T')[0];
-                
                 const dayDiv = document.createElement('div'); dayDiv.className = 'day-cell';
                 if (isoDate === todayStr) dayDiv.classList.add('today');
                 
@@ -410,8 +367,12 @@
             let occ = 0; bs.forEach(b => occ += parseInt(b.guests||1));
             let cls = 'st-green'; if (occ > 0 && occ < room.cap) cls = 'st-yellow'; else if (occ >= room.cap) cls = 'st-red';
             const clickData = bs.length > 0 ? JSON.stringify(bs).replace(/"/g, '&quot;') : 'null';
+            // Check for Breakfast
+            const hasBreakfast = bs.some(b => b.breakfast === 'true');
+            const bfLabel = hasBreakfast ? '+D' : '';
+            
             return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)">
-                <span class="pill-full">${room.name} (${occ}/${room.cap})</span><span class="pill-abbr">${getAbbr(room.name)}</span></div>`;
+                <span class="pill-full">${room.name} (${occ}/${room.cap}) ${bfLabel}</span><span class="pill-abbr">${getAbbr(room.name)}${bfLabel}</span></div>`;
         }
 
         function handlePillClick(date, room, existingBookings, e) {
@@ -429,6 +390,7 @@
                 document.getElementById('b-room').value = b.room;
                 document.getElementById('b-platform').value = b.platform;
                 document.getElementById('b-guests').value = b.guests || 1;
+                document.getElementById('b-breakfast').checked = (b.breakfast === 'true');
                 document.getElementById('b-start').value = b.start;
                 document.getElementById('b-end').value = b.end;
                 document.getElementById('b-phone').value = b.phone || '';
@@ -437,7 +399,7 @@
                 if(b.receiptLinkId) { lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`; lnk.classList.remove('hidden'); } else { lnk.classList.add('hidden'); }
                 document.getElementById('btn-delete').classList.remove('hidden');
             } else {
-                f.reset(); document.getElementById('booking-id').value = ""; document.getElementById('b-guests').value = 1;
+                f.reset(); document.getElementById('booking-id').value = ""; document.getElementById('b-guests').value = 1; document.getElementById('b-breakfast').checked = false;
                 if(roomHint) document.getElementById('b-room').value = roomHint;
                 if(dateHint) { document.getElementById('b-start').value = dateHint; const n = new Date(dateHint); n.setDate(n.getDate()+1); document.getElementById('b-end').value = n.toISOString().split('T')[0]; }
                 lnk.classList.add('hidden'); document.getElementById('btn-delete').classList.add('hidden');
@@ -453,9 +415,20 @@
             if(photos.length > 0) { const root = await ensureFolderExists('customers', rootFolderId); folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root); for(let f of photos) await uploadFile(f, folderId); }
             let receiptId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.receiptLinkId||"");
             if(receipt) receiptId = await uploadFile(receipt, receiptFolderId);
-            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, start: document.getElementById('b-start').value, end: document.getElementById('b-end').value, phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value };
+            const b = { id, folderId, receiptLinkId: receiptId, 
+                receiptNumber: document.getElementById('b-receipt-num').value, 
+                room: document.getElementById('b-room').value, 
+                guestName: document.getElementById('b-name').value, 
+                platform: document.getElementById('b-platform').value, 
+                guests: document.getElementById('b-guests').value, 
+                breakfast: document.getElementById('b-breakfast').checked ? 'true' : 'false',
+                start: document.getElementById('b-start').value, 
+                end: document.getElementById('b-end').value, 
+                phone: document.getElementById('b-phone').value, 
+                email: document.getElementById('b-email').value 
+            };
             if(isNew) bookingsData.push(b); else bookingsData[bookingsData.findIndex(x=>x.id===id)] = b;
-            await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); btn.disabled=false; btn.innerText="Save";
+            await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); btn.disabled=false; btn.innerText=i18n[configData.lang].save;
         };
         async function deleteBooking() { if(confirm("Delete?")){ bookingsData=bookingsData.filter(b=>b.id!==document.getElementById('booking-id').value); await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); } }
 
@@ -463,13 +436,31 @@
         function addRoom() { const n=document.getElementById('new-room-name').value; const c=document.getElementById('new-room-cap').value; const g = document.querySelector('input[name="r-grp"]:checked').value; if(n&&c){ configData.rooms.push({name:n, cap:parseInt(c), group:parseInt(g)}); openRoomsModal(); renderMonth(); saveAllToDrive(); } }
         function removeRoom(i) { if(confirm('Delete?')){ configData.rooms.splice(i,1); openRoomsModal(); renderMonth(); saveAllToDrive(); } }
 
-        async function exportToSheets() { const btn = document.querySelector('button[onclick="exportToSheets()"]'); const orig = btn.innerText; btn.innerText = "..."; let csv = 'In,Out,Room,Guest,Guests,Platform,Receipt#,Link\n'; bookingsData.forEach(b => { const l = b.receiptLinkId ? `https://drive.google.com/file/d/${b.receiptLinkId}/view` : ""; const r = [b.start, b.end, b.room, b.guestName, b.guests, b.platform, b.receiptNumber, l]; csv += r.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",") + "\n"; }); const meta = { name: `Hostel_Export_${new Date().toISOString()}`, mimeType: 'application/vnd.google-apps.spreadsheet', parents: [rootFolderId] }; const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' })); form.append('file', new Blob([csv], { type: 'text/csv' })); const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }, body: form }); const j = await res.json(); btn.innerText = orig; if(j.id) window.open(`https://docs.google.com/spreadsheets/d/${j.id}`, '_blank'); }
+        // EXPORT TO SHEETS (EU Date Format)
+        function formatDateEU(iso) { if(!iso) return ""; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+        async function exportToSheets() { 
+            const btn = document.querySelector('button[onclick="exportToSheets()"]'); const orig = btn.innerText; btn.innerText = "..."; 
+            let csv = 'Check-In,Check-Out,Soba,Gost,Osoba,Dorucak,Platforma,Racun,Link\n'; 
+            bookingsData.forEach(b => { 
+                const l = b.receiptLinkId ? `https://drive.google.com/file/d/${b.receiptLinkId}/view` : ""; 
+                const r = [formatDateEU(b.start), formatDateEU(b.end), b.room, b.guestName, b.guests, (b.breakfast==='true'?'DA':'NE'), b.platform, b.receiptNumber, l]; 
+                csv += r.map(v => `"${(v || "").toString().replace(/"/g, '""')}"`).join(",") + "\n"; 
+            }); 
+            const meta = { name: `Hostel_Export_${new Date().toISOString().split('T')[0]}`, mimeType: 'application/vnd.google-apps.spreadsheet', parents: [rootFolderId] }; 
+            const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' })); form.append('file', new Blob([csv], { type: 'text/csv' })); 
+            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }, body: form }); 
+            const j = await res.json(); btn.innerText = orig; if(j.id) window.open(`https://docs.google.com/spreadsheets/d/${j.id}`, '_blank'); 
+        }
 
-        function applyLanguage(l){ configData.lang = l; document.getElementById('txt-brand').innerText = i18n[l].brand; document.getElementById('txt-today').innerText = i18n[l].today; document.getElementById('txt-new').innerText = i18n[l].new; document.getElementById('week-header').innerHTML = i18n[l].days.map(d => `<div>${d}</div>`).join(''); renderMonth(); }
+        function applyLanguage(l){ configData.lang = l; const t=i18n[l]; document.getElementById('txt-brand').innerText=t.brand; document.getElementById('txt-today').innerText=t.today; document.getElementById('txt-sync').innerText=t.sync; document.getElementById('txt-new').innerText=t.new; document.getElementById('lbl-name').innerText=t.name; document.getElementById('lbl-room').innerText=t.room; document.getElementById('lbl-platform').innerText=t.plat; document.getElementById('lbl-guests').innerText=t.guests; document.getElementById('lbl-breakfast').innerText=t.breakfast; document.getElementById('lbl-contact').innerText=t.contact; document.getElementById('lbl-photos').innerText=t.photos; document.getElementById('lbl-receipt').innerText=t.receipt; document.getElementById('btn-save').innerText=t.save; document.getElementById('lbl-manage').innerText=t.manage; document.getElementById('week-header').innerHTML=t.days.map(d=>`<div>${d}</div>`).join(''); renderMonth(); }
         function toggleLang(){ applyLanguage(configData.lang==='en'?'hr':'en'); saveAllToDrive(); }
         async function runPrivacyCleanup() { const now = new Date(); let ch = false; for(let b of bookingsData) { if(!b.folderId) continue; const end = new Date(b.end); end.setHours(end.getHours()+24); if(now>end) { try{await gapi.client.drive.files.delete({fileId:b.folderId}); b.folderId=""; ch=true;}catch(e){} } } if(ch) await saveAllToDrive(); }
-        function toCSV(d){const h=["id","room","guestName","platform","guests","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
+        
+        function toCSV(d){const h=["id","room","guestName","platform","guests","breakfast","start","end","phone","email","folderId","receiptNumber","receiptLinkId"];const r=d.map(o=>h.map(k=>(o[k]||"").replace(/\|/g,'')).join("|"));return[h.join("|"),...r].join("\n");}
         function parseCSV(t){const[h,...l]=t.trim().split("\n");if(!h)return[];const k=h.split("|");return l.map(r=>{const v=r.split("|");return k.reduce((a,c,i)=>({...a,[c]:v[i]}),{});});}
+        
+        async function findFileExact(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`, orderBy:'modifiedTime desc'});return r.result.files[0]?.id||null;}
+        async function resolveFileId(n){const r=await gapi.client.drive.files.list({q:`name='${n}' and '${rootFolderId}' in parents and trashed=false`, orderBy:'modifiedTime desc'}); if(r.result.files.length>1){ for(let i=1;i<r.result.files.length;i++) await gapi.client.drive.files.delete({fileId:r.result.files[i].id}); } return r.result.files[0]?.id||null; }
         
         async function createFile(n,c,p,t){const f=new FormData();f.append('metadata',new Blob([JSON.stringify({name:n,parents:[p]})],{type:'application/json'}));f.append('file',new Blob([c],{type:t}));await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token},body:f});}
         async function updateFile(i,c,t){await fetch(`https://www.googleapis.com/upload/drive/v3/files/${i}?uploadType=media`,{method:'PATCH',headers:{'Authorization':'Bearer '+gapi.client.getToken().access_token,'Content-Type':t},body:new Blob([c],{type:t})});}
