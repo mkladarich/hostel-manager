@@ -10,9 +10,12 @@
             --bg-body: #FFFFFF; --bg-subtle: #F7F7F5; 
             --text-main: #37352F; --text-muted: #787774; --border: #E1E1E0;
             --primary: #0081C9; 
-            --status-free: #e8f5e9; --status-free-text: #2e7d32; 
-            --status-part: #fff3e0; --status-part-text: #ef6c00; 
-            --status-full: #ffebee; --status-full-text: #c62828; 
+            
+            /* NEW CAPACITY COLORS */
+            --status-free-bg: #e8f5e9; --status-free-text: #2e7d32;   /* GREEN */
+            --status-part-bg: #fff3e0; --status-part-text: #e65100;   /* ORANGE */
+            --status-full-bg: #ffebee; --status-full-text: #c62828;   /* RED */
+
             --radius: 6px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
         }
 
@@ -59,9 +62,11 @@
         }
         .room-pill:hover { border-color: #999; filter: brightness(0.95); }
 
-        .st-green { background: var(--status-free); color: var(--status-free-text); }
-        .st-yellow { background: var(--status-part); color: var(--status-part-text); font-weight:700; }
-        .st-red { background: var(--status-full); color: var(--status-full-text); font-weight:700; }
+        /* STRICT CAPACITY COLORS */
+        .st-green  { background: var(--status-free-bg); color: var(--status-free-text); border:1px solid #c8e6c9; }
+        .st-orange { background: var(--status-part-bg); color: var(--status-part-text); border:1px solid #ffe0b2; font-weight:700; }
+        .st-red    { background: var(--status-full-bg); color: var(--status-full-text); border:1px solid #ffcdd2; font-weight:700; }
+
         .pill-abbr { display: none; font-weight: 700; text-align: center; }
 
         /* --- MOBILE --- */
@@ -97,6 +102,11 @@
         .receipt-link { display: block; margin-top: 5px; font-size: 0.85em; color: #2e7d32; text-decoration: none; font-weight: 600; }
         .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
         .hidden { display: none !important; }
+
+        /* Custom Date Trigger */
+        .date-trigger { position: relative; cursor: pointer; }
+        .date-trigger input[type="date"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
+        .date-trigger input[type="text"] { background: #fff; z-index: 1; pointer-events: none; }
     </style>
 </head>
 <body>
@@ -171,11 +181,17 @@
                 <div style="display:flex; gap:10px;">
                     <div class="form-group" style="flex:1">
                         <label>Check-in</label>
-                        <input type="date" id="b-start" required>
+                        <div class="date-trigger">
+                            <input type="date" id="b-start-hidden" required onchange="onDateChange('b-start')">
+                            <input type="text" id="b-start-display" readonly placeholder="dd.mm.yyyy">
+                        </div>
                     </div>
                     <div class="form-group" style="flex:1">
                         <label>Check-out</label>
-                        <input type="date" id="b-end" required>
+                        <div class="date-trigger">
+                            <input type="date" id="b-end-hidden" required onchange="onDateChange('b-end')">
+                            <input type="text" id="b-end-display" readonly placeholder="dd.mm.yyyy">
+                        </div>
                     </div>
                 </div>
                 <div class="receipt-box">
@@ -245,8 +261,6 @@
             en: { brand: "Calendar", today: "Today", sync: "Sync", new: "New Booking", name: "Guest Name", room: "Room (Cap)", plat: "Platform", guests: "Guests", breakfast: "Breakfast", contact: "Contact", photos: "Photos (24h)", receipt: "Receipt (Permanent)", save: "Save", manage: "Manage Rooms", loginDesc: "Manager & Evidence", btnLogin: "Login with Google", days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] },
             hr: { brand: "Kalendar", today: "Danas", sync: "Sinkroniziraj", new: "Nova rezervacija", name: "Ime Gosta", room: "Soba (Kapacitet)", plat: "Platforma", guests: "Broj Osoba", breakfast: "Doručak", contact: "Kontakt", photos: "Slike (24h)", receipt: "Račun (Trajno)", save: "Spremi", manage: "Uredi Sobe", loginDesc: "Sustav za upravljanje i evidenciju", btnLogin: "Prijava putem Googla", days: ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"] }
         };
-
-        const platformColors = { 'Direkt': '#2E7D32', 'Email': '#9C27B0', 'Booking': '#003580', 'Airbnb': '#FF5A5F' };
 
         function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); if(localStorage.getItem('g_token')){ gapi.client.setToken(JSON.parse(localStorage.getItem('g_token'))); try { document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden'); await initDriveStructure(); await syncData(); } catch(e) { localStorage.removeItem('g_token'); location.reload(); } } }); }
         function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: async (resp) => { if (resp.error) throw resp; localStorage.setItem('g_token', JSON.stringify(gapi.client.getToken())); document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('app-screen').classList.remove('hidden'); await initDriveStructure(); await syncData(); }, }); }
@@ -324,20 +338,30 @@
         }
 
         function getAbbr(name) { if(name.startsWith("Hostel")) return "H" + name.split(" ")[1]; if(name.startsWith("Soba")) return "S" + name.split(" ")[1]; if(name.startsWith("Apart")) return "App"; return name.substring(0,2).toUpperCase(); }
+        
         function buildRoomPill(room, dateIso) {
             const bs = bookingsData.filter(b => b.room === room.name && dateIso >= b.start && dateIso < b.end);
             let occ = 0; bs.forEach(b => occ += parseInt(b.guests||1));
-            let cls = 'st-green'; if (occ > 0 && occ < room.cap) cls = 'st-yellow'; else if (occ >= room.cap) cls = 'st-red';
+            
+            // STRICT CAPACITY COLORS
+            let cls = 'st-green'; 
+            if (occ > 0 && occ < room.cap) cls = 'st-yellow'; 
+            else if (occ >= room.cap) cls = 'st-red';
+            
             const clickData = bs.length > 0 ? JSON.stringify(bs).replace(/"/g, '&quot;') : 'null';
             const hasBreakfast = bs.some(b => b.breakfast === 'true');
             const bfLabel = hasBreakfast ? '+D' : '';
-            const bg = bs.length > 0 ? (platformColors[bs[0].platform] ? `background-color:${platformColors[bs[0].platform]}; color:white;` : '') : '';
-            const style = bg ? `style="${bg}"` : '';
-            const finalCls = bg ? 'room-pill' : `room-pill ${cls}`;
-            return `<div class="${finalCls}" ${style} onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)"><span class="pill-full">${room.name} (${occ}/${room.cap}) ${bfLabel}</span><span class="pill-abbr">${getAbbr(room.name)}${bfLabel}</span></div>`;
+            
+            // Removed bg style based on platform colors, now only using CSS classes
+            return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)"><span class="pill-full">${room.name} (${occ}/${room.cap}) ${bfLabel}</span><span class="pill-abbr">${getAbbr(room.name)}${bfLabel}</span></div>`;
         }
 
         function handlePillClick(date, room, existingBookings, e) { e.stopPropagation(); if(existingBookings && existingBookings.length > 0) openBookingModal(existingBookings[0]); else openBookingModal(null, date, room); }
+
+        function onDateChange(idPrefix) {
+            const iso = document.getElementById(idPrefix+'-hidden').value;
+            if(iso) document.getElementById(idPrefix+'-display').value = formatDateEU(iso);
+        }
 
         function openBookingModal(b = null, dateHint = null, roomHint = null) {
             const m = document.getElementById('booking-modal'), f = document.getElementById('booking-form'), lnk = document.getElementById('lnk-receipt');
@@ -345,7 +369,8 @@
             if (b) {
                 document.getElementById('booking-id').value = b.id; document.getElementById('b-name').value = b.guestName; document.getElementById('b-room').value = b.room; document.getElementById('b-platform').value = b.platform;
                 document.getElementById('b-guests').value = b.guests || 1; document.getElementById('b-breakfast').checked = (b.breakfast === 'true');
-                document.getElementById('b-start').value = b.start; document.getElementById('b-end').value = b.end;
+                document.getElementById('b-start-hidden').value = b.start; document.getElementById('b-start-display').value = formatDateEU(b.start);
+                document.getElementById('b-end-hidden').value = b.end; document.getElementById('b-end-display').value = formatDateEU(b.end);
                 document.getElementById('b-phone').value = b.phone || ''; document.getElementById('b-email').value = b.email || ''; document.getElementById('b-receipt-num').value = b.receiptNumber || "";
                 if(b.receiptLinkId) { lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`; lnk.classList.remove('hidden'); } else { lnk.classList.add('hidden'); }
                 document.getElementById('btn-delete').classList.remove('hidden');
@@ -353,11 +378,13 @@
                 f.reset(); document.getElementById('booking-id').value = ""; document.getElementById('b-guests').value = 1; document.getElementById('b-breakfast').checked = false;
                 if(roomHint) document.getElementById('b-room').value = roomHint;
                 if(dateHint) { 
-                    document.getElementById('b-start').value = dateHint;
+                    document.getElementById('b-start-hidden').value = dateHint; document.getElementById('b-start-display').value = formatDateEU(dateHint);
                     const n = new Date(dateHint); n.setDate(n.getDate()+1); 
                     const nIso = n.toISOString().split('T')[0];
-                    document.getElementById('b-end').value = nIso;
-                } 
+                    document.getElementById('b-end-hidden').value = nIso; document.getElementById('b-end-display').value = formatDateEU(nIso);
+                } else {
+                    document.getElementById('b-start-display').value = ""; document.getElementById('b-end-display').value = "";
+                }
                 lnk.classList.add('hidden'); document.getElementById('btn-delete').classList.add('hidden');
             }
         }
@@ -371,7 +398,7 @@
             if(photos.length > 0) { const root = await ensureFolderExists('customers', rootFolderId); folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root); for(let f of photos) await uploadFile(f, folderId); }
             let receiptId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.receiptLinkId||"");
             if(receipt) receiptId = await uploadFile(receipt, receiptFolderId);
-            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, breakfast: document.getElementById('b-breakfast').checked ? 'true' : 'false', start: document.getElementById('b-start').value, end: document.getElementById('b-end').value, phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value };
+            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, breakfast: document.getElementById('b-breakfast').checked ? 'true' : 'false', start: document.getElementById('b-start-hidden').value, end: document.getElementById('b-end-hidden').value, phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value };
             if(isNew) bookingsData.push(b); else bookingsData[bookingsData.findIndex(x=>x.id===id)] = b;
             await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); btn.disabled=false; btn.innerText=i18n[configData.lang].save;
         };
