@@ -11,7 +11,7 @@
             --text-main: #37352F; --text-muted: #787774; --border: #E1E1E0;
             --primary: #0081C9; 
             
-            /* NEW CAPACITY COLORS */
+            /* CAPACITY COLORS */
             --status-free-bg: #e8f5e9; --status-free-text: #2e7d32;   /* GREEN */
             --status-part-bg: #fff3e0; --status-part-text: #e65100;   /* ORANGE */
             --status-full-bg: #ffebee; --status-full-text: #c62828;   /* RED */
@@ -103,10 +103,16 @@
         .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
         .hidden { display: none !important; }
 
-        /* Custom Date Trigger */
-        .date-trigger { position: relative; cursor: pointer; }
-        .date-trigger input[type="date"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
-        .date-trigger input[type="text"] { background: #fff; z-index: 1; pointer-events: none; }
+        /* Custom Date Overlay Hack */
+        .date-wrapper { position: relative; height: 42px; width: 100%; }
+        .date-wrapper input[type="date"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; z-index: 10; cursor: pointer;
+        }
+        .date-wrapper input[type="text"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; background: #fff;
+        }
     </style>
 </head>
 <body>
@@ -181,15 +187,15 @@
                 <div style="display:flex; gap:10px;">
                     <div class="form-group" style="flex:1">
                         <label>Check-in</label>
-                        <div class="date-trigger">
-                            <input type="date" id="b-start-hidden" required onchange="onDateChange('b-start')">
+                        <div class="date-wrapper">
+                            <input type="date" id="b-start-picker" required onchange="updateDateDisplay('start')">
                             <input type="text" id="b-start-display" readonly placeholder="dd.mm.yyyy">
                         </div>
                     </div>
                     <div class="form-group" style="flex:1">
                         <label>Check-out</label>
-                        <div class="date-trigger">
-                            <input type="date" id="b-end-hidden" required onchange="onDateChange('b-end')">
+                        <div class="date-wrapper">
+                            <input type="date" id="b-end-picker" required onchange="updateDateDisplay('end')">
                             <input type="text" id="b-end-display" readonly placeholder="dd.mm.yyyy">
                         </div>
                     </div>
@@ -343,24 +349,25 @@
             const bs = bookingsData.filter(b => b.room === room.name && dateIso >= b.start && dateIso < b.end);
             let occ = 0; bs.forEach(b => occ += parseInt(b.guests||1));
             
-            // STRICT CAPACITY COLORS
+            // STRICT CAPACITY COLORS (FIXED NAME)
             let cls = 'st-green'; 
-            if (occ > 0 && occ < room.cap) cls = 'st-yellow'; 
+            if (occ > 0 && occ < room.cap) cls = 'st-orange'; 
             else if (occ >= room.cap) cls = 'st-red';
             
             const clickData = bs.length > 0 ? JSON.stringify(bs).replace(/"/g, '&quot;') : 'null';
             const hasBreakfast = bs.some(b => b.breakfast === 'true');
             const bfLabel = hasBreakfast ? '+D' : '';
             
-            // Removed bg style based on platform colors, now only using CSS classes
             return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)"><span class="pill-full">${room.name} (${occ}/${room.cap}) ${bfLabel}</span><span class="pill-abbr">${getAbbr(room.name)}${bfLabel}</span></div>`;
         }
 
         function handlePillClick(date, room, existingBookings, e) { e.stopPropagation(); if(existingBookings && existingBookings.length > 0) openBookingModal(existingBookings[0]); else openBookingModal(null, date, room); }
 
-        function onDateChange(idPrefix) {
-            const iso = document.getElementById(idPrefix+'-hidden').value;
-            if(iso) document.getElementById(idPrefix+'-display').value = formatDateEU(iso);
+        // --- DATE DISPLAY HANDLERS ---
+        function updateDateDisplay(type) {
+            const picker = document.getElementById(`b-${type}-picker`);
+            const display = document.getElementById(`b-${type}-display`);
+            if(picker.value) display.value = formatDateEU(picker.value);
         }
 
         function openBookingModal(b = null, dateHint = null, roomHint = null) {
@@ -369,8 +376,12 @@
             if (b) {
                 document.getElementById('booking-id').value = b.id; document.getElementById('b-name').value = b.guestName; document.getElementById('b-room').value = b.room; document.getElementById('b-platform').value = b.platform;
                 document.getElementById('b-guests').value = b.guests || 1; document.getElementById('b-breakfast').checked = (b.breakfast === 'true');
-                document.getElementById('b-start-hidden').value = b.start; document.getElementById('b-start-display').value = formatDateEU(b.start);
-                document.getElementById('b-end-hidden').value = b.end; document.getElementById('b-end-display').value = formatDateEU(b.end);
+                
+                document.getElementById('b-start-picker').value = b.start; 
+                document.getElementById('b-start-display').value = formatDateEU(b.start);
+                document.getElementById('b-end-picker').value = b.end;
+                document.getElementById('b-end-display').value = formatDateEU(b.end);
+
                 document.getElementById('b-phone').value = b.phone || ''; document.getElementById('b-email').value = b.email || ''; document.getElementById('b-receipt-num').value = b.receiptNumber || "";
                 if(b.receiptLinkId) { lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`; lnk.classList.remove('hidden'); } else { lnk.classList.add('hidden'); }
                 document.getElementById('btn-delete').classList.remove('hidden');
@@ -378,12 +389,15 @@
                 f.reset(); document.getElementById('booking-id').value = ""; document.getElementById('b-guests').value = 1; document.getElementById('b-breakfast').checked = false;
                 if(roomHint) document.getElementById('b-room').value = roomHint;
                 if(dateHint) { 
-                    document.getElementById('b-start-hidden').value = dateHint; document.getElementById('b-start-display').value = formatDateEU(dateHint);
+                    document.getElementById('b-start-picker').value = dateHint; 
+                    document.getElementById('b-start-display').value = formatDateEU(dateHint);
                     const n = new Date(dateHint); n.setDate(n.getDate()+1); 
                     const nIso = n.toISOString().split('T')[0];
-                    document.getElementById('b-end-hidden').value = nIso; document.getElementById('b-end-display').value = formatDateEU(nIso);
+                    document.getElementById('b-end-picker').value = nIso;
+                    document.getElementById('b-end-display').value = formatDateEU(nIso);
                 } else {
-                    document.getElementById('b-start-display').value = ""; document.getElementById('b-end-display').value = "";
+                    document.getElementById('b-start-display').value = "";
+                    document.getElementById('b-end-display').value = "";
                 }
                 lnk.classList.add('hidden'); document.getElementById('btn-delete').classList.add('hidden');
             }
@@ -398,7 +412,11 @@
             if(photos.length > 0) { const root = await ensureFolderExists('customers', rootFolderId); folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root); for(let f of photos) await uploadFile(f, folderId); }
             let receiptId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.receiptLinkId||"");
             if(receipt) receiptId = await uploadFile(receipt, receiptFolderId);
-            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, breakfast: document.getElementById('b-breakfast').checked ? 'true' : 'false', start: document.getElementById('b-start-hidden').value, end: document.getElementById('b-end-hidden').value, phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value };
+            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, breakfast: document.getElementById('b-breakfast').checked ? 'true' : 'false', 
+                start: document.getElementById('b-start-picker').value, 
+                end: document.getElementById('b-end-picker').value, 
+                phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value 
+            };
             if(isNew) bookingsData.push(b); else bookingsData[bookingsData.findIndex(x=>x.id===id)] = b;
             await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); btn.disabled=false; btn.innerText=i18n[configData.lang].save;
         };
