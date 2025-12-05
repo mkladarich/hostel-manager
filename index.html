@@ -13,7 +13,7 @@
             
             /* CAPACITY COLORS */
             --status-free-bg: #e8f5e9; --status-free-text: #2e7d32;   /* GREEN */
-            --status-part-bg: #fff3e0; --status-part-text: #e65100;   /* ORANGE */
+            --status-part-bg: #fff3e0; --status-part-text: #ef6c00;   /* ORANGE */
             --status-full-bg: #ffebee; --status-full-text: #c62828;   /* RED */
 
             --radius: 6px; --shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
@@ -103,16 +103,9 @@
         .room-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; align-items: center; }
         .hidden { display: none !important; }
 
-        /* Custom Date Overlay Hack */
-        .date-wrapper { position: relative; height: 45px; width: 100%; background: #fff; border-radius: var(--radius); }
-        .date-wrapper input[type="date"] {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; z-index: 10; cursor: pointer;
-        }
-        .date-wrapper input[type="text"] {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px;
-        }
+        /* Custom Date Picker Trigger */
+        .date-input-group { position: relative; }
+        .date-input-group input[type="text"] { background: #fff; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -187,16 +180,16 @@
                 <div style="display:flex; gap:10px;">
                     <div class="form-group" style="flex:1">
                         <label>Check-in</label>
-                        <div class="date-wrapper">
-                            <input type="date" id="b-start-picker" required oninput="updateDateDisplay('start')" onchange="updateDateDisplay('start')">
+                        <div class="date-input-group" onclick="openPicker('b-start')">
                             <input type="text" id="b-start-display" readonly placeholder="dd.mm.yyyy">
+                            <input type="date" id="b-start" required style="position:absolute; visibility:hidden; width:1px; height:1px;" onchange="updateDateDisplay('b-start')">
                         </div>
                     </div>
                     <div class="form-group" style="flex:1">
                         <label>Check-out</label>
-                        <div class="date-wrapper">
-                            <input type="date" id="b-end-picker" required oninput="updateDateDisplay('end')" onchange="updateDateDisplay('end')">
+                        <div class="date-input-group" onclick="openPicker('b-end')">
                             <input type="text" id="b-end-display" readonly placeholder="dd.mm.yyyy">
+                            <input type="date" id="b-end" required style="position:absolute; visibility:hidden; width:1px; height:1px;" onchange="updateDateDisplay('b-end')">
                         </div>
                     </div>
                 </div>
@@ -273,7 +266,6 @@
         function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
         function handleSignoutClick() { const t=gapi.client.getToken(); if(t) google.accounts.oauth2.revoke(t.access_token); gapi.client.setToken(''); localStorage.removeItem('g_token'); location.reload(); }
 
-        // --- DRIVE STRUCTURE ---
         async function initDriveStructure() {
             const q = "mimeType='application/vnd.google-apps.folder' and name='HostelManager_App_Data' and trashed=false";
             const res = await gapi.client.drive.files.list({ q: q, orderBy: 'createdTime', fields: 'files(id)' });
@@ -288,7 +280,6 @@
             return res.result.files.length > 0 ? res.result.files[0].id : (await gapi.client.drive.files.create({ resource: { name: n, mimeType: 'application/vnd.google-apps.folder', parents: [p] }, fields: 'id' })).result.id;
         }
 
-        // --- SYNC ---
         async function syncData() {
             const btn = document.getElementById('txt-sync'); const orig = btn.innerText; btn.innerText = "...";
             const cId = await findFileExact('config_master.json');
@@ -315,7 +306,6 @@
             const now = new Date(); document.getElementById('sync-time').innerText = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`; btn.innerText = i18n[configData.lang].sync;
         }
 
-        // --- APP LOGIC ---
         function goToToday() { currentViewDate = new Date(); renderMonth(); }
         function changeMonth(d) { currentViewDate.setMonth(currentViewDate.getMonth() + d); renderMonth(); }
         function toggleMobileView() { document.getElementById('month-grid').classList.toggle('mobile-overview'); }
@@ -344,31 +334,22 @@
         }
 
         function getAbbr(name) { if(name.startsWith("Hostel")) return "H" + name.split(" ")[1]; if(name.startsWith("Soba")) return "S" + name.split(" ")[1]; if(name.startsWith("Apart")) return "App"; return name.substring(0,2).toUpperCase(); }
-        
         function buildRoomPill(room, dateIso) {
             const bs = bookingsData.filter(b => b.room === room.name && dateIso >= b.start && dateIso < b.end);
             let occ = 0; bs.forEach(b => occ += parseInt(b.guests||1));
-            
-            // STRICT CAPACITY COLORS (FIXED NAME)
             let cls = 'st-green'; 
-            if (occ > 0 && occ < room.cap) cls = 'st-orange'; // Fixed this typo!
+            if (occ > 0 && occ < room.cap) cls = 'st-orange'; 
             else if (occ >= room.cap) cls = 'st-red';
-            
             const clickData = bs.length > 0 ? JSON.stringify(bs).replace(/"/g, '&quot;') : 'null';
             const hasBreakfast = bs.some(b => b.breakfast === 'true');
             const bfLabel = hasBreakfast ? '+D' : '';
-            
             return `<div class="room-pill ${cls}" onclick="handlePillClick('${dateIso}', '${room.name}', ${clickData}, event)"><span class="pill-full">${room.name} (${occ}/${room.cap}) ${bfLabel}</span><span class="pill-abbr">${getAbbr(room.name)}${bfLabel}</span></div>`;
         }
 
         function handlePillClick(date, room, existingBookings, e) { e.stopPropagation(); if(existingBookings && existingBookings.length > 0) openBookingModal(existingBookings[0]); else openBookingModal(null, date, room); }
 
-        // --- DATE DISPLAY HANDLERS ---
-        function updateDateDisplay(type) {
-            const picker = document.getElementById(`b-${type}-picker`);
-            const display = document.getElementById(`b-${type}-display`);
-            if(picker.value) display.value = formatDateEU(picker.value);
-        }
+        function openPicker(id) { document.getElementById(id).showPicker(); }
+        function updateDateDisplay(id) { const el = document.getElementById(id); if(el.value) document.getElementById(id+'-display').value = formatDateEU(el.value); }
 
         function openBookingModal(b = null, dateHint = null, roomHint = null) {
             const m = document.getElementById('booking-modal'), f = document.getElementById('booking-form'), lnk = document.getElementById('lnk-receipt');
@@ -376,12 +357,8 @@
             if (b) {
                 document.getElementById('booking-id').value = b.id; document.getElementById('b-name').value = b.guestName; document.getElementById('b-room').value = b.room; document.getElementById('b-platform').value = b.platform;
                 document.getElementById('b-guests').value = b.guests || 1; document.getElementById('b-breakfast').checked = (b.breakfast === 'true');
-                
-                document.getElementById('b-start-picker').value = b.start; 
-                document.getElementById('b-start-display').value = formatDateEU(b.start);
-                document.getElementById('b-end-picker').value = b.end;
-                document.getElementById('b-end-display').value = formatDateEU(b.end);
-
+                document.getElementById('b-start').value = b.start; document.getElementById('b-start-display').value = formatDateEU(b.start);
+                document.getElementById('b-end').value = b.end; document.getElementById('b-end-display').value = formatDateEU(b.end);
                 document.getElementById('b-phone').value = b.phone || ''; document.getElementById('b-email').value = b.email || ''; document.getElementById('b-receipt-num').value = b.receiptNumber || "";
                 if(b.receiptLinkId) { lnk.href = `https://drive.google.com/file/d/${b.receiptLinkId}/view`; lnk.classList.remove('hidden'); } else { lnk.classList.add('hidden'); }
                 document.getElementById('btn-delete').classList.remove('hidden');
@@ -389,16 +366,10 @@
                 f.reset(); document.getElementById('booking-id').value = ""; document.getElementById('b-guests').value = 1; document.getElementById('b-breakfast').checked = false;
                 if(roomHint) document.getElementById('b-room').value = roomHint;
                 if(dateHint) { 
-                    document.getElementById('b-start-picker').value = dateHint; 
-                    document.getElementById('b-start-display').value = formatDateEU(dateHint);
-                    const n = new Date(dateHint); n.setDate(n.getDate()+1); 
-                    const nIso = n.toISOString().split('T')[0];
-                    document.getElementById('b-end-picker').value = nIso;
-                    document.getElementById('b-end-display').value = formatDateEU(nIso);
-                } else {
-                    document.getElementById('b-start-display').value = "";
-                    document.getElementById('b-end-display').value = "";
-                }
+                    document.getElementById('b-start').value = dateHint; document.getElementById('b-start-display').value = formatDateEU(dateHint);
+                    const n = new Date(dateHint); n.setDate(n.getDate()+1); const nIso = n.toISOString().split('T')[0];
+                    document.getElementById('b-end').value = nIso; document.getElementById('b-end-display').value = formatDateEU(nIso);
+                } else { document.getElementById('b-start-display').value = ""; document.getElementById('b-end-display').value = ""; }
                 lnk.classList.add('hidden'); document.getElementById('btn-delete').classList.add('hidden');
             }
         }
@@ -412,11 +383,7 @@
             if(photos.length > 0) { const root = await ensureFolderExists('customers', rootFolderId); folderId = await ensureFolderExists(Math.random().toString(36).substring(7), root); for(let f of photos) await uploadFile(f, folderId); }
             let receiptId = isNew ? "" : (bookingsData.find(b=>b.id===id)?.receiptLinkId||"");
             if(receipt) receiptId = await uploadFile(receipt, receiptFolderId);
-            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, breakfast: document.getElementById('b-breakfast').checked ? 'true' : 'false', 
-                start: document.getElementById('b-start-picker').value, 
-                end: document.getElementById('b-end-picker').value, 
-                phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value 
-            };
+            const b = { id, folderId, receiptLinkId: receiptId, receiptNumber: document.getElementById('b-receipt-num').value, room: document.getElementById('b-room').value, guestName: document.getElementById('b-name').value, platform: document.getElementById('b-platform').value, guests: document.getElementById('b-guests').value, breakfast: document.getElementById('b-breakfast').checked ? 'true' : 'false', start: document.getElementById('b-start').value, end: document.getElementById('b-end').value, phone: document.getElementById('b-phone').value, email: document.getElementById('b-email').value };
             if(isNew) bookingsData.push(b); else bookingsData[bookingsData.findIndex(x=>x.id===id)] = b;
             await saveAllToDrive(); renderMonth(); closeModal('booking-modal'); btn.disabled=false; btn.innerText=i18n[configData.lang].save;
         };
